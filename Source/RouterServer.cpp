@@ -28,17 +28,29 @@ void RouterServer::Start()
 
 void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
 {
-    g_Global.UserSessions().UpdateSession(conn);
+    int connId = conn->getConnId();
 
     if (conn->connected())
     {
         InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, 0);
         EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, 0);
 
-        std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, "client_hst2_0", conn->getConnId()));
+        std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, "client_hst2_0", connId));
         client->Start();
 
         g_Global.GwClientManager().AddClient(conn->getConnId(), std::move(client));
+        g_Global.UserSessions().AddSession(conn);
+    }
+    else
+    {
+        // 先删除缓存
+        g_Global.UserSessions().EraseSession(connId);
+        // 通知 client断开
+        DstClient *client = g_Global.GwClientManager().GetClient(connId);
+        if (client != nullptr)
+        {
+            client->Close();
+        }
     }
 }
 

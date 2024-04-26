@@ -31,6 +31,12 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
     {
         fmt::print(fg(fmt::color::orange_red), "Remove connection : {}\n", connName);
         // 通知src断开
+
+        auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
+        if (connPtr != nullptr)
+        {
+            connPtr->forceCloseWithDelay(1.0);
+        }
     }
 }
 

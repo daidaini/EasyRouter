@@ -41,8 +41,7 @@ public:
 
 private:
     //<srcConn, dstClient>
-    std::unordered_map<TcpConnIDType, std::unique_ptr<DstClient>>
-        m_DstClientMapper;
+    std::unordered_map<TcpConnIDType, std::unique_ptr<DstClient>> m_DstClientMapper;
 
     std::mutex m_DstMtx;
 };
