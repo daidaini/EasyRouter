@@ -148,7 +148,7 @@ void RtAuthUser::SwapCommunicationKey()
 
     ::memset(&m_CommEncryptKey, 0, sizeof(m_CommEncryptKey));
     ::memset(&m_CommDecryptKey, 0, sizeof(m_CommDecryptKey));
-    AES_set_encrypt_key((u_char *)randkey, 256, &m_CommEncryptKey);
+    AES_set_encrypt_key((u_char *)randkey, 256, &m_CommEncryptKey); // 更新
     AES_set_decrypt_key((u_char *)randkey, 256, &m_CommDecryptKey);
 
     m_Commkey = randkey;
@@ -196,4 +196,53 @@ std::string RtAuthUser::UnLoadPackageDefault(const pobo::CommMessage &msg)
 
 void RtAuthUser::SwapPasswordKey()
 {
+    char randkey[128]{};
+    STD::GenerateDesKey((u_char *)randkey, sizeof(randkey), 32);
+    // AES_set_decrypt_key((u_char *)randkey, 256, &m_PwdDecodeKey);
+    // AES_set_encrypt_key((u_char *)randkey, 256, &m_PwdEncodeKey);
+
+    m_RspStep.Init();
+
+    m_RspStep.SetBaseFieldValueInt(STEP_CODE, 0);
+    m_RspStep.SetBaseFieldValueString(STEP_MSG, "");
+    m_RspStep.SetBaseFieldValueInt(STEP_FUNC, 3); // 功能
+    m_RspStep.SetBaseFieldValueInt(STEP_REQUESTNO, m_ReqStep.Requestno());
+    m_RspStep.SetBaseFieldValueInt(STEP_SESSION, m_TcpConn->getConnId());
+    m_RspStep.SetBaseFieldValueInt(STEP_RETURNNUM, 1);
+    m_RspStep.SetBaseFieldValueInt(STEP_TOTALNUM, 1);
+
+    m_RspStep.AppendRecord();
+    m_RspStep.AddFieldValue(STEP_TXMY, randkey);
+    m_RspStep.EndAppendRecord();
+
+    m_Pwdkey = randkey;
+
+    SendMsgBack(m_RspStep.ToString());
+}
+
+void RtAuthUser::SendMsgBack(const std::string &rsp)
+{
+    const char *src = rsp.data();
+    int srclen = rsp.size();
+
+    // 压缩
+    char zipedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
+    int zipedlen = 0;
+    if (!PoboPkgHandle::CompressToZip(zipedmsg, zipedlen, src, srclen))
+    {
+        return;
+    }
+
+    // 加密
+    u_char pkgedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
+    int len = PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, zipedlen, m_CommEncryptKey);
+
+    PB_FrameHead *head = (PB_FrameHead *)pkgedmsg;
+    head->PackageNo = 0;
+    head->PackageNum = 1;
+
+    if (m_TcpConn->connected())
+    {
+        m_TcpConn->send(pkgedmsg, len);
+    }
 }

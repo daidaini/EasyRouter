@@ -39,6 +39,8 @@ private:
 
     void SwapPasswordKey();
 
+    void SendMsgBack(const std::string &rsp);
+
 private:
     muduo::net::TcpConnectionPtr m_TcpConn;
 
