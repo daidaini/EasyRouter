@@ -22,6 +22,8 @@ private:
 
     RtAuthUser *GetAuthUser(TcpConnIDType connId);
 
+    void EraseAuthUser(TcpConnIDType connId);
+
 private:
     std::unique_ptr<muduo::net::TcpServer> m_TcpServer;
 

@@ -17,26 +17,26 @@ RtAuthUser::~RtAuthUser()
     delete m_CachedMsgBuf;
 }
 
-void RtAuthUser::ProcessMsg(const pobo::CommMessage &msg)
+int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg)
 {
     auto type = PoboPkgHandle::CheckPackage(msg.Head);
     if (type == RawPackageType::Unknown)
     {
         // to do. // 此处可以埋点检测下未知的包的多少，可以考虑对连接的IP做管理
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "Unnknown package type[{}] ..", (int)msg.Head.Sign);
-        return;
+        return -1;
     }
 
     if (!CheckPkgAccurate(type))
     {
         // log
-        return;
+        return -1;
     }
 
     u_short checkcode = pobo::GetCheckCode(msg.Body.data(), msg.Head.PackageSize);
     if (checkcode != msg.Head.CheckCode)
     {
-        return;
+        return -1;
     }
 
     if (type == RawPackageType::Static)
@@ -48,7 +48,8 @@ void RtAuthUser::ProcessMsg(const pobo::CommMessage &msg)
         }
         if (m_ReqStep.FunctionId() == 1)
         {
-            return SwapCommunicationKey();
+            SwapCommunicationKey();
+            return 1;
         }
     }
     else
@@ -61,11 +62,16 @@ void RtAuthUser::ProcessMsg(const pobo::CommMessage &msg)
         if (m_ReqStep.FunctionId() == 3)
         {
             SwapPasswordKey();
+            return 3;
         }
-        else if (m_ReqStep.FunctionId() == 3)
+        else if (m_ReqStep.FunctionId() == 6011)
         {
+            ProcessLoginRequest();
+            return 6011;
         }
     }
+
+    return 0;
 }
 
 bool RtAuthUser::CheckPkgAccurate(pobo::RawPackageType type) const
@@ -129,22 +135,7 @@ void RtAuthUser::SwapCommunicationKey()
 
     m_RspStep.EndAppendRecord();
 
-    auto rspBuf = m_RspStep.ToString();
-
-    char zipedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
-    int zipedlen = 0;
-    if (!PoboPkgHandle::CompressToZip(zipedmsg, zipedlen, rspBuf.data(), rspBuf.size(), false))
-    {
-        return;
-    }
-
-    u_char pkgedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
-    int len = PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, (u_long)zipedlen, m_CommEncryptKey);
-
-    if (m_TcpConn->connected())
-    {
-        m_TcpConn->send(pkgedmsg, len);
-    }
+    SendMsgBack(m_RspStep.ToString());
 
     ::memset(&m_CommEncryptKey, 0, sizeof(m_CommEncryptKey));
     ::memset(&m_CommDecryptKey, 0, sizeof(m_CommDecryptKey));
@@ -152,6 +143,7 @@ void RtAuthUser::SwapCommunicationKey()
     AES_set_decrypt_key((u_char *)randkey, 256, &m_CommDecryptKey);
 
     m_Commkey = randkey;
+    m_CurrAuthStatus = AuthStatus::ConfirmCommKey;
 }
 
 int RtAuthUser::DecrpytStaticKey(char *outBuf, const pobo::CommMessage &msg)
@@ -216,6 +208,7 @@ void RtAuthUser::SwapPasswordKey()
     m_RspStep.EndAppendRecord();
 
     m_Pwdkey = randkey;
+    m_CurrAuthStatus = AuthStatus::ConrirmPwdKey;
 
     SendMsgBack(m_RspStep.ToString());
 }
@@ -237,12 +230,19 @@ void RtAuthUser::SendMsgBack(const std::string &rsp)
     u_char pkgedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
     int len = PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, zipedlen, m_CommEncryptKey);
 
-    PB_FrameHead *head = (PB_FrameHead *)pkgedmsg;
-    head->PackageNo = 0;
-    head->PackageNum = 1;
-
     if (m_TcpConn->connected())
     {
         m_TcpConn->send(pkgedmsg, len);
     }
+}
+
+void RtAuthUser::ProcessLoginRequest()
+{
+    AES_KEY decodeKey{};
+    AES_set_decrypt_key((u_char *)m_Pwdkey.data(), 256, &decodeKey);
+
+    auto tradePwd = m_ReqStep.GetBaseFieldValueString_Encrypted(STEP_JYMM, decodeKey);
+    fmt::print("交易密码获取 = {}\n", tradePwd);
+
+    m_CurrAuthStatus = AuthStatus::ConfirmLogin;
 }

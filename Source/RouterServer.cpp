@@ -67,7 +67,15 @@ void RouterServer::OnMessage(const muduo::net::TcpConnectionPtr &conn, muduo::ne
 
     if (!client->IsAuthed())
     {
+        // 缓存当前信息
+        // client->SetLoginRequest(std::string(buf->peek(), buf->readableBytes()));
+
         return ProcessAuthMessage(conn, buf, client);
+    }
+    else
+    {
+        // to do. //测试，什么时候删除需要再研究考虑
+        EraseAuthUser(conn->getConnId());
     }
 
     // to do . test
@@ -100,18 +108,36 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Debug, "[{}]Package left size[{}:{}]", conn->getConnId(), leftLen, buflen);
     }
 
-    buf->retrieve(buflen - leftLen);
-
     RtAuthUser *authUser = GetAuthUser(conn->getConnId());
     if (authUser == nullptr)
     {
         return;
     }
 
-    for (auto &msg : cachedMsgs)
+    if (cachedMsgs.empty())
     {
-        authUser->ProcessMsg(msg);
+        return;
     }
+
+    auto &msg = cachedMsgs.front();
+
+    int result = authUser->ProcessMsg(msg);
+    if (result <= 0)
+    {
+        fmt::print("AuthUser ProcessMsg failed..\n");
+    }
+    if (result == 6011)
+    {
+        // 缓存登录信息
+        // client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
+
+        // to do.. 临时测试使用，默认为认证成功
+        client->ConfirmAuthed();
+
+        client->SendMsg(std::string(buf->peek(), buflen - leftLen));
+    }
+
+    buf->retrieve(buflen - leftLen);
 }
 
 void RouterServer::AddAuthUser(const muduo::net::TcpConnectionPtr &conn)
@@ -127,10 +153,16 @@ RtAuthUser *RouterServer::GetAuthUser(TcpConnIDType connId)
     std::lock_guard<std::mutex> guard(m_AuthMtx);
 
     auto it = m_AuthUsers.find(connId);
-    if (it == m_AuthUsers.end())
+    if (it != m_AuthUsers.end())
     {
         return it->second.get();
     }
 
     return nullptr;
+}
+
+void RouterServer::EraseAuthUser(TcpConnIDType connId)
+{
+    std::lock_guard<std::mutex> guard(m_AuthMtx);
+    m_AuthUsers.erase(connId);
 }

@@ -24,7 +24,8 @@ public:
     explicit RtAuthUser(const muduo::net::TcpConnectionPtr &tcpConn);
     ~RtAuthUser();
 
-    void ProcessMsg(const pobo::CommMessage &msg);
+    // 返回功能号 (小于0为失败)
+    int ProcessMsg(const pobo::CommMessage &msg);
 
 private:
     bool CheckPkgAccurate(pobo::RawPackageType type) const;
@@ -38,6 +39,7 @@ private:
     void SwapCommunicationKey();
 
     void SwapPasswordKey();
+    void ProcessLoginRequest();
 
     void SendMsgBack(const std::string &rsp);
 
