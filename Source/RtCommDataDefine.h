@@ -19,6 +19,8 @@
 
 #include "SpdLogger.h"
 
+#include "PbStaticData.h"
+
 using TcpConnIDType = int;
 
 // 网关模块类型定义

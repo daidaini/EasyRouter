@@ -70,3 +70,28 @@ void DstClient::Close()
 {
     m_Client.disconnect();
 }
+
+void DstClient::SetCommKey(std::string commkey)
+{
+    m_Commkey = std::move(m_Commkey);
+}
+
+void DstClient::SetPwdKey(std::string pwdkey)
+{
+    m_Pwdkey = std::move(pwdkey);
+}
+
+void DstClient::SetLoginRequest(std::string loginReq)
+{
+    m_EncrypedLoginReq = std::move(loginReq);
+}
+
+void DstClient::ConfirmAuthed()
+{
+    m_IsAuthed = true;
+}
+
+bool DstClient::IsAuthed() const
+{
+    return m_IsAuthed;
+}
