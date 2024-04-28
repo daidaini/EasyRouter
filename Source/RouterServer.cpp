@@ -126,7 +126,16 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
     {
         fmt::print("AuthUser ProcessMsg failed..\n");
     }
-    if (result == 6011)
+
+    if (result == 1)
+    {
+        client->SetCommKey(authUser->GetCommKey());
+    }
+    else if (result == 3)
+    {
+        client->SetPwdKey(authUser->GetPwdKey());
+    }
+    else if (result == 6011)
     {
         // 缓存登录信息
         // client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
@@ -134,6 +143,9 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
         // to do.. 临时测试使用，默认为认证成功
         client->ConfirmAuthed();
 
+        // 推送密钥
+        client->PushKeys();
+        // 转发登录报文
         client->SendMsg(std::string(buf->peek(), buflen - leftLen));
     }
 

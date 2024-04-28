@@ -122,6 +122,8 @@ void RtAuthUser::SwapCommunicationKey()
 
     char randkey[128]{};
     STD::GenerateDesKey((u_char *)randkey, sizeof(randkey), 32);
+    m_Commkey = randkey;
+
     m_RspStep.SetBaseFieldValueInt(STEP_CODE, 0);
     m_RspStep.SetBaseFieldValueString(STEP_MSG, "");
     m_RspStep.SetBaseFieldValueInt(STEP_FUNC, 1);
@@ -142,7 +144,6 @@ void RtAuthUser::SwapCommunicationKey()
     AES_set_encrypt_key((u_char *)randkey, 256, &m_CommEncryptKey); // 更新
     AES_set_decrypt_key((u_char *)randkey, 256, &m_CommDecryptKey);
 
-    m_Commkey = randkey;
     m_CurrAuthStatus = AuthStatus::ConfirmCommKey;
 }
 
@@ -245,4 +246,14 @@ void RtAuthUser::ProcessLoginRequest()
     fmt::print("交易密码获取 = {}\n", tradePwd);
 
     m_CurrAuthStatus = AuthStatus::ConfirmLogin;
+}
+
+const std::string &RtAuthUser::GetCommKey() const
+{
+    return m_Commkey;
+}
+
+const std::string &RtAuthUser::GetPwdKey() const
+{
+    return m_Pwdkey;
 }

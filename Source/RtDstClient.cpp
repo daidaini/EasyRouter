@@ -50,7 +50,7 @@ void DstClient::OnResponse(const TcpConnectionPtr &conn, Buffer *buf, muduo::Tim
     buf->retrieveAll();
 }
 
-void DstClient::SendMsg(std::string msg)
+void DstClient::SendMsg(const std::string &msg)
 {
     if (m_Client.connection()->connected())
     {
@@ -73,7 +73,7 @@ void DstClient::Close()
 
 void DstClient::SetCommKey(std::string commkey)
 {
-    m_Commkey = std::move(m_Commkey);
+    m_Commkey = std::move(commkey);
 }
 
 void DstClient::SetPwdKey(std::string pwdkey)
@@ -84,6 +84,11 @@ void DstClient::SetPwdKey(std::string pwdkey)
 void DstClient::SetLoginRequest(std::string loginReq)
 {
     m_EncrypedLoginReq = std::move(loginReq);
+}
+
+void DstClient::PushKeys()
+{
+    SendMsg(fmt::format("Router,{},{},", m_Commkey, m_Pwdkey));
 }
 
 void DstClient::ConfirmAuthed()

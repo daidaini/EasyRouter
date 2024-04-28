@@ -27,6 +27,10 @@ public:
     // 返回功能号 (小于0为失败)
     int ProcessMsg(const pobo::CommMessage &msg);
 
+    const std::string &GetCommKey() const;
+
+    const std::string &GetPwdKey() const;
+
 private:
     bool CheckPkgAccurate(pobo::RawPackageType type) const;
 

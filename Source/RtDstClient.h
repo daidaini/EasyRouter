@@ -27,8 +27,10 @@ public:
 
     bool IsAuthed() const;
 
-    void SendMsg(std::string msg);
+    void SendMsg(const std::string &msg);
     void SendMsg(muduo::net::Buffer *buff);
+
+    void PushKeys();
 
     void Close();
 
