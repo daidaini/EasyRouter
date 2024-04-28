@@ -6,15 +6,6 @@
 #include "muduo/net/TcpClient.h"
 #include "muduo/net/TcpServer.h"
 
-#include <fmt/format.h>
-#include <fmt/color.h>
-
-#include <map>
-#include <unordered_map>
-#include <memory>
-#include <vector>
-#include <mutex>
-
 #include <syscall.h>
 
 #include "SpdLogger.h"
@@ -22,6 +13,23 @@
 #include "PbStaticData.h"
 
 using TcpConnIDType = int;
+
+enum class RouterAuthType
+{
+    ThirdSys,
+    None,
+};
+
+inline RouterAuthType TransRouterAuthType(int type)
+{
+    switch (type)
+    {
+    case 1:
+        return RouterAuthType::ThirdSys;
+    }
+
+    return RouterAuthType::None;
+}
 
 // 网关模块类型定义
 enum class GwModuleTypeEnum
@@ -40,7 +48,7 @@ enum class GwModuleTypeEnum
     UT,
 };
 
-inline GwModuleTypeEnum TGwModuleTypeFromStr(std::string name)
+inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
 {
     static std::map<std::string, GwModuleTypeEnum> s_NameMapperType{
         {"HST2", GwModuleTypeEnum::HST2},

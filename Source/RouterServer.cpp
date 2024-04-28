@@ -22,7 +22,7 @@ void RouterServer::Start()
     m_TcpServer->setMessageCallback(std::bind(&RouterServer::OnMessage, this, ::_1, ::_2, ::_3));
 
     // 设置Server的线程池大小
-    m_TcpServer->setThreadNum(g_Global.Configer().m_ServerThreadCnt);
+    m_TcpServer->setThreadNum(g_Global.m_ServerThreadCnt);
 
     m_TcpServer->start();
 }
@@ -36,6 +36,8 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
         InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, 0);
         EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, 0);
 
+        // to do.
+        // DstClient不应该在这里创建，应该在获取到路由标识之后，根据标识进行创建
         std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, "client_hst2_0", connId));
         client->Start();
 
