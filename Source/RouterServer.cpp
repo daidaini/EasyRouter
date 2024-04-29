@@ -34,15 +34,8 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
 
     if (conn->connected())
     {
-        // to do.
-        // DstClient不应该在这里创建，应该在获取到路由标识之后，根据标识进行创建
-        static std::atomic_int s_CalcCnt{0};
-        int currIndex = s_CalcCnt.fetch_add(1);
-        InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, currIndex);
-        EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, currIndex);
-
-        std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, fmt::format("client_hst2_{}", currIndex), connId));
-
+        // 创建client
+        std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(connId));
         g_Global.GwClientManager().AddClient(connId, std::move(client));
 
         g_Global.UserSessions().AddSession(conn);
@@ -72,9 +65,6 @@ void RouterServer::OnMessage(const muduo::net::TcpConnectionPtr &conn, muduo::ne
 
     if (!client->IsAuthed())
     {
-        // 缓存当前信息
-        // client->SetLoginRequest(std::string(buf->peek(), buf->readableBytes()));
-
         return ProcessAuthMessage(conn, buf, client);
     }
     else
@@ -144,19 +134,12 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
     }
     else if (result == 6011)
     {
-
-        // 缓存登录信息
-        // client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
-
-        // to do.. 临时测试使用，默认为认证成功
-
-        // 推送密钥
-        // client->PushKeys();
-        // 转发登录报文
-        // client->SendMsg(std::string(buf->peek(), buflen - leftLen));
-        client->Start();
+        // to do. test
+        client->Create(GwModuleTypeEnum::HST2);
 
         client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
+
+        client->Connect();
 
         client->ConfirmAuthed();
     }

@@ -8,10 +8,12 @@ using namespace muduo;
 class DstClient final
 {
 public:
-    DstClient(EventLoop *loop, const InetAddress *serverAddr, std::string name, int srcConnId);
+    explicit DstClient(int srcConnId);
     ~DstClient() = default;
 
-    void Start();
+    void Create(GwModuleTypeEnum moduleType);
+
+    void Connect();
 
     void OnConnect(const TcpConnectionPtr &tcpConn);
     void OnResponse(const TcpConnectionPtr &conn, Buffer *buf, muduo::Timestamp time);
@@ -35,7 +37,8 @@ private:
     void PushKeys();
 
 private:
-    TcpClient m_Client;
+    std::unique_ptr<TcpClient> m_Client;
+
     std::atomic_bool m_IsConnected{false};
 
     std::string m_Name;

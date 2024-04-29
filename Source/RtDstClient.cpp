@@ -1,23 +1,39 @@
 #include "RtDstClient.h"
 #include "RtGlobalResource.h"
 
-DstClient::DstClient(EventLoop *loop, const InetAddress *serverAddr, std::string name, int srcConnId)
-    : m_Client(loop, *serverAddr, name)
+using namespace muduo::net;
+
+DstClient::DstClient(int srcConnId)
 {
-    m_Client.setConnectionCallback([this](const TcpConnectionPtr &conn)
-                                   { this->OnConnect(conn); });
-
-    m_Client.setMessageCallback([this](const TcpConnectionPtr &conn, Buffer *buf, Timestamp time)
-                                { this->OnResponse(conn, buf, time); });
-
-    m_Name = std::move(name);
-
     m_SrcConnId = srcConnId;
 }
 
-void DstClient::Start()
+void DstClient::Create(GwModuleTypeEnum moduleType)
 {
-    m_Client.connect();
+    if (m_Client != nullptr)
+    {
+        fmt::print("Create client repeatly\n");
+        return;
+    }
+
+    static std::atomic<size_t> s_ClientIndex = {1};
+    m_Name = fmt::format("{}_client_{}", s_ClientIndex.fetch_add(1), m_SrcConnId);
+
+    InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, s_ClientIndex.load());
+    EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, s_ClientIndex.load());
+
+    m_Client = std::unique_ptr<TcpClient>(new TcpClient(loop, *addr, m_Name));
+
+    m_Client->setConnectionCallback([this](const TcpConnectionPtr &conn)
+                                    { this->OnConnect(conn); });
+
+    m_Client->setMessageCallback([this](const TcpConnectionPtr &conn, Buffer *buf, Timestamp time)
+                                 { this->OnResponse(conn, buf, time); });
+}
+
+void DstClient::Connect()
+{
+    m_Client->connect();
 }
 
 void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
@@ -60,7 +76,7 @@ void DstClient::SendMsg(const std::string &msg)
 {
     if (m_IsConnected)
     {
-        return m_Client.connection()->send(msg.data(), msg.size());
+        return m_Client->connection()->send(msg.data(), msg.size());
     }
 
     if (!m_IsAuthed)
@@ -70,7 +86,7 @@ void DstClient::SendMsg(const std::string &msg)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             if (m_IsConnected)
             {
-                return m_Client.connection()->send(msg.data(), msg.size());
+                return m_Client->connection()->send(msg.data(), msg.size());
             }
         }
     }
@@ -81,13 +97,13 @@ void DstClient::SendMsg(muduo::net::Buffer *buff)
 {
     if (m_IsConnected)
     {
-        m_Client.connection()->send(buff);
+        m_Client->connection()->send(buff);
     }
 }
 
 void DstClient::Close()
 {
-    m_Client.disconnect();
+    m_Client->disconnect();
 }
 
 void DstClient::SetCommKey(std::string commkey)

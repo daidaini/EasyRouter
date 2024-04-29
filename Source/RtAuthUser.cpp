@@ -243,7 +243,8 @@ void RtAuthUser::ProcessLoginRequest()
     AES_set_decrypt_key((u_char *)m_Pwdkey.data(), 256, &decodeKey);
 
     auto tradePwd = m_ReqStep.GetBaseFieldValueString_Encrypted(STEP_JYMM, decodeKey);
-    fmt::print("交易密码获取 = {}\n", tradePwd);
+    auto loginAccount = m_ReqStep.GetStepValueByID(STEP_DLZH);
+    fmt::print("pwd = {}, account = {}\n", tradePwd, loginAccount);
 
     m_CurrAuthStatus = AuthStatus::ConfirmLogin;
 }
