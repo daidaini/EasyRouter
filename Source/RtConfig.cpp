@@ -45,10 +45,9 @@ muduo::net::InetAddress *RtConfig::DstAddr(GwModuleTypeEnum type, size_t index)
 
     if (it != m_DstAddrGroups.end())
     {
-        if (it->second.size() > index)
-        {
-            return &(it->second.at(index));
-        }
+        index = index % it->second.size();
+
+        return &(it->second.at(index));
     }
 
     return nullptr;

@@ -14,25 +14,26 @@ void GlobalResource::InitEventLoop()
     // 创建eventloopthrea，并开启线程
     for (auto &item : m_Config.m_DstAddrGroups)
     {
-        auto it = m_DstEventloopGroup.find(item.first);
-        if (it == m_DstEventloopGroup.end())
+        for (size_t i = 0; i < item.second.size(); ++i)
         {
-            it = m_DstEventloopGroup.insert({item.first, std::vector<muduo::net::EventLoop *>{}}).first;
+            auto it = m_DstEventloopGroup.find(item.first);
+            if (it == m_DstEventloopGroup.end())
+            {
+                it = m_DstEventloopGroup.insert({item.first, std::vector<muduo::net::EventLoop *>{}}).first;
+            }
+
+            std::unique_ptr<muduo::net::EventLoopThread> loopTh =
+                std::unique_ptr<muduo::net::EventLoopThread>(new muduo::net::EventLoopThread(
+                    [](EventLoop *loop)
+                    {
+                        fmt::print("thread[{}] init sucucess..\n", ::syscall(SYS_gettid));
+                    },
+                    "LoopThread"));
+
+            muduo::net::EventLoop *loop = loopTh->startLoop();
+            it->second.emplace_back(loop);
+            m_EventLoopThreads.emplace_back(std::move(loopTh));
         }
-
-        std::unique_ptr<muduo::net::EventLoopThread> loopTh =
-            std::unique_ptr<muduo::net::EventLoopThread>(new muduo::net::EventLoopThread(
-                [](EventLoop *loop)
-                {
-                    fmt::print("thread[{}] init sucucess..\n", ::syscall(SYS_gettid));
-                },
-                "LoopThread"));
-
-        muduo::net::EventLoop *loop = loopTh->startLoop();
-
-        it->second.emplace_back(loop);
-
-        m_EventLoopThreads.emplace_back(std::move(loopTh));
     }
 }
 
@@ -58,5 +59,12 @@ RtGwClientManager &GlobalResource::GwClientManager()
 
 muduo::net::EventLoop *GlobalResource::EvnetLoop(GwModuleTypeEnum type, size_t index)
 {
-    return m_DstEventloopGroup[type].at(index);
+    auto it = m_DstEventloopGroup.find(type);
+    if (it != m_DstEventloopGroup.end())
+    {
+        index = index % it->second.size();
+        return it->second.at(index);
+    }
+
+    return nullptr;
 }

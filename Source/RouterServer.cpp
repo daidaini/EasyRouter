@@ -1,6 +1,7 @@
 #include "RouterServer.h"
 #include "RtGlobalResource.h"
 #include "PbPkgHandle.h"
+#include "t2sdk_interface.h"
 
 using namespace muduo::net;
 using namespace std::placeholders;
@@ -33,12 +34,16 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
 
     if (conn->connected())
     {
-        InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, 0);
-        EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, 0);
-
         // to do.
         // DstClient不应该在这里创建，应该在获取到路由标识之后，根据标识进行创建
-        std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, "client_hst2_0", connId));
+
+        static std::atomic_int s_CalcCnt{0};
+
+        int currIndex = s_CalcCnt.fetch_add(1);
+        InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, currIndex);
+        EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, currIndex);
+
+        std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, fmt::format("client_hst2_{}", currIndex), connId));
         client->Start();
 
         g_Global.GwClientManager().AddClient(connId, std::move(client));

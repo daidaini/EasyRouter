@@ -25,11 +25,11 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
     auto connName = tcpConn->name();
     if (tcpConn->connected())
     {
-        fmt::print(fg(fmt::color::sea_green), "New connection : {}\n", connName);
+        fmt::print(fg(fmt::color::sea_green), "New connection : {}[{}]\n", connName, m_SrcConnId);
     }
     else
     {
-        fmt::print(fg(fmt::color::orange_red), "Remove connection : {}\n", connName);
+        fmt::print(fg(fmt::color::orange_red), "Remove connection : {}[{}]\n", connName, m_SrcConnId);
         // 通知src断开
 
         auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
