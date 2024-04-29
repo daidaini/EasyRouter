@@ -36,17 +36,15 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
     {
         // to do.
         // DstClient不应该在这里创建，应该在获取到路由标识之后，根据标识进行创建
-
         static std::atomic_int s_CalcCnt{0};
-
         int currIndex = s_CalcCnt.fetch_add(1);
         InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, currIndex);
         EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, currIndex);
 
         std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(loop, addr, fmt::format("client_hst2_{}", currIndex), connId));
-        client->Start();
 
         g_Global.GwClientManager().AddClient(connId, std::move(client));
+
         g_Global.UserSessions().AddSession(conn);
 
         AddAuthUser(conn);
@@ -101,21 +99,23 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
     int buflen = static_cast<int>(buf->readableBytes());
     int leftLen = PoboPkgHandle::SplitPackage(buf->peek(), buflen, cachedMsgs);
 
+    auto connId = conn->getConnId();
+
     if (leftLen < 0 && leftLen >= MAX_STEP_PACKAGE_SIZE)
     {
         buf->retrieveAll();
         // 存在非法包，不继续处理
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Unsupported request package",
-                                       conn->getConnId(), conn->peerAddress().toIp());
+                                       connId, conn->peerAddress().toIp());
         return;
     }
 
     if (leftLen > 0)
     {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Debug, "[{}]Package left size[{}:{}]", conn->getConnId(), leftLen, buflen);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Debug, "[{}]Package left size[{}:{}]", connId, leftLen, buflen);
     }
 
-    RtAuthUser *authUser = GetAuthUser(conn->getConnId());
+    RtAuthUser *authUser = GetAuthUser(connId);
     if (authUser == nullptr)
     {
         return;
@@ -144,16 +144,21 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
     }
     else if (result == 6011)
     {
+
         // 缓存登录信息
         // client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
 
         // to do.. 临时测试使用，默认为认证成功
-        client->ConfirmAuthed();
 
         // 推送密钥
-        client->PushKeys();
+        // client->PushKeys();
         // 转发登录报文
-        client->SendMsg(std::string(buf->peek(), buflen - leftLen));
+        // client->SendMsg(std::string(buf->peek(), buflen - leftLen));
+        client->Start();
+
+        client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
+
+        client->ConfirmAuthed();
     }
 
     buf->retrieve(buflen - leftLen);

@@ -26,10 +26,16 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
     if (tcpConn->connected())
     {
         fmt::print(fg(fmt::color::sea_green), "New connection : {}[{}]\n", connName, m_SrcConnId);
+        m_IsConnected.store(true);
+
+        PushKeys();
+
+        SendMsg(m_EncrypedLoginReq);
     }
     else
     {
         fmt::print(fg(fmt::color::orange_red), "Remove connection : {}[{}]\n", connName, m_SrcConnId);
+        m_IsConnected.store(false);
         // 通知src断开
 
         auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
@@ -52,15 +58,28 @@ void DstClient::OnResponse(const TcpConnectionPtr &conn, Buffer *buf, muduo::Tim
 
 void DstClient::SendMsg(const std::string &msg)
 {
-    if (m_Client.connection()->connected())
+    if (m_IsConnected)
     {
-        m_Client.connection()->send(msg.data(), msg.size());
+        return m_Client.connection()->send(msg.data(), msg.size());
     }
+
+    if (!m_IsAuthed)
+    {
+        for (int i = 0; i < 10; ++i) // 等1秒
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            if (m_IsConnected)
+            {
+                return m_Client.connection()->send(msg.data(), msg.size());
+            }
+        }
+    }
+    fmt::print(fg(fmt::color::pale_violet_red), "[{}] msg send failed..\n", m_SrcConnId);
 }
 
 void DstClient::SendMsg(muduo::net::Buffer *buff)
 {
-    if (m_Client.connection()->connected())
+    if (m_IsConnected)
     {
         m_Client.connection()->send(buff);
     }

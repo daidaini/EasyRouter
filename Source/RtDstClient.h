@@ -24,18 +24,19 @@ public:
     void SetLoginRequest(std::string loginReq);
 
     void ConfirmAuthed();
-
     bool IsAuthed() const;
 
     void SendMsg(const std::string &msg);
     void SendMsg(muduo::net::Buffer *buff);
 
-    void PushKeys();
-
     void Close();
 
 private:
+    void PushKeys();
+
+private:
     TcpClient m_Client;
+    std::atomic_bool m_IsConnected{false};
 
     std::string m_Name;
 
