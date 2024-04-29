@@ -21,6 +21,8 @@ add_package(PBStep ../Common/PBStep)
 include_directories(../pb-trade-server/PBFrame/DataDefine)
 add_match_package(StaticData ../pb-trade-server/PBFrame/Source/ PbStaticData.*)
 
+include_directories(../pb-trade-server/ServiceHST2/T2SDK/Include)
+
 find_library(BOOST_FILESYS_LIB libboost_filesystem.a)
 message("BOOST_FILESYS_LIB : " ${BOOST_FILESYS_LIB})
 
@@ -41,10 +43,15 @@ else()
     message(STATUS "ZLIB: " ${Z_LIB})
 endif()
 
+SET(THIRD_LIBRARY_PATH ${THIRD_LIBRARY_PATH} ../pb-trade-server/ServiceHST2/T2SDK/linux.x64/lib)
+
 # 添加预定义
 add_definitions(-DFMT_HEADER_ONLY)
 add_definitions(-DSPDLOG_FMT_EXTERNAL)
 
 add_executable(${PRJ} ${all_file})
 
-target_link_libraries(${PRJ} PRIVATE ${BOOST_FILESYS_LIB} ${OPENSSL_LIBRARIES} ${Z_LIB})
+target_link_libraries(${PRJ} PRIVATE ${BOOST_FILESYS_LIB} ${OPENSSL_LIBRARIES} ${Z_LIB} libt2sdk.so)
+
+target_link_directories(${PRJ} PUBLIC ${THIRD_LIBRARY_PATH})
+
