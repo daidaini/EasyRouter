@@ -20,7 +20,13 @@ void GlobalResource::InitEventLoop()
             it = m_DstEventloopGroup.insert({item.first, std::vector<muduo::net::EventLoop *>{}}).first;
         }
 
-        std::unique_ptr<muduo::net::EventLoopThread> loopTh = std::unique_ptr<muduo::net::EventLoopThread>(new muduo::net::EventLoopThread);
+        std::unique_ptr<muduo::net::EventLoopThread> loopTh =
+            std::unique_ptr<muduo::net::EventLoopThread>(new muduo::net::EventLoopThread(
+                [](EventLoop *loop)
+                {
+                    fmt::print("thread[{}] init sucucess..\n", ::syscall(SYS_gettid));
+                },
+                "LoopThread"));
 
         muduo::net::EventLoop *loop = loopTh->startLoop();
 
