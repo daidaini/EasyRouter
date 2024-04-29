@@ -23,6 +23,7 @@ void RtConfig::LoadConfig()
 
     Json::Value::Members mems = jval.getMemberNames();
     m_ServerPort = jval["server_port"].asInt();
+    m_ServerThreadCnt = jval["server_thread_cnt"].asInt();
 
     auto &dstAddrArr = jval["dst_addrs"];
     for (auto i = 0U; i < dstAddrArr.size(); ++i)

@@ -21,8 +21,6 @@ public:
 
     muduo::net::EventLoop *EvnetLoop(GwModuleTypeEnum type, size_t index);
 
-    int m_ServerThreadCnt{4};
-
 public:
     GlobalResource() = default;
     ~GlobalResource() = default;

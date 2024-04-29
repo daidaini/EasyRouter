@@ -22,7 +22,7 @@ void RouterServer::Start()
     m_TcpServer->setMessageCallback(std::bind(&RouterServer::OnMessage, this, ::_1, ::_2, ::_3));
 
     // 设置Server的线程池大小
-    m_TcpServer->setThreadNum(g_Global.m_ServerThreadCnt);
+    m_TcpServer->setThreadNum(g_Global.Configer().m_ServerThreadCnt);
 
     m_TcpServer->start();
 }
