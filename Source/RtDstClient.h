@@ -48,6 +48,7 @@ private:
 
     std::string m_Pwdkey;
     std::string m_Commkey;
+
     std::string m_EncrypedLoginReq;
 
     bool m_IsAuthed{false};

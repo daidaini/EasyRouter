@@ -226,7 +226,12 @@ namespace HST2
         case 0:
             return {GateError::SUCCESS, ""};
         case 1:
-            return {GateError::BIZ_ERROR, GetPackerErrorInfo()};
+        {
+            std::string tmp = GetPackerErrorInfo();
+            char errmsg[256]{};
+            pobo::GB2312ToUTF8((char *)tmp.data(), tmp.size(), errmsg, sizeof(errmsg));
+            return {GateError::BIZ_ERROR, errmsg};
+        }
         case 2:
             return {GateError::BIZ_ERROR, (const char *)m_IF2UnPacker};
         case 3:

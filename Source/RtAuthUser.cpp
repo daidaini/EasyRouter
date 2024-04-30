@@ -1,6 +1,7 @@
 #include "RtAuthUser.h"
 #include "PoboTool.h"
 #include "STD.h"
+#include "RtGlobalResource.h"
 
 using namespace pobo;
 
@@ -242,11 +243,19 @@ void RtAuthUser::ProcessLoginRequest()
     AES_KEY decodeKey{};
     AES_set_decrypt_key((u_char *)m_Pwdkey.data(), 256, &decodeKey);
 
-    auto tradePwd = m_ReqStep.GetBaseFieldValueString_Encrypted(STEP_JYMM, decodeKey);
-    auto loginAccount = m_ReqStep.GetStepValueByID(STEP_DLZH);
-    fmt::print("pwd = {}, account = {}\n", tradePwd, loginAccount);
+    AuthRequestParam params;
 
-    m_CurrAuthStatus = AuthStatus::ConfirmLogin;
+    params.Password = m_ReqStep.GetBaseFieldValueString_Encrypted(STEP_JYMM, decodeKey);
+    params.AccountId = m_ReqStep.GetStepValueByID(STEP_DLZH);
+    // fmt::print("pwd = {}, account = {}\n", tradePwd, loginAccount);
+    params.LoginType = m_ReqStep.GetLoginType();
+    params.AccountType = static_cast<AccountTypeEnum>(m_ReqStep.GetFieldValueChar(STEP_ZHLB));
+
+    this->m_CurrAuthStatus = AuthStatus::ConfirmLogin;
+
+    DstClient *client = g_Global.GwClientManager().GetClient(m_TcpConn->getConnId());
+
+    AskingRouterFlagTh(params, client);
 }
 
 const std::string &RtAuthUser::GetCommKey() const
@@ -259,6 +268,20 @@ const std::string &RtAuthUser::GetPwdKey() const
     return m_Pwdkey;
 }
 
-void RtAuthUser::AskingRouterFlagTh(AuthRequestParam params)
+void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *client)
 {
+    g_Global.AskingThreadPool().run(
+        [params, client, this]()
+        {
+            g_Global.Hst2Auther()->AskForModuleType(
+                params,
+                [client](GwModuleTypeEnum moduleType)
+                {
+                    fmt::print("Confirm module type : {}\n", GwModuleTypeToStr(moduleType));
+
+                    client->Create(moduleType);
+                    client->Connect();
+                    client->ConfirmAuthed();
+                });
+        });
 }

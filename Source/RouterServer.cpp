@@ -134,13 +134,14 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
     else if (result == 6011)
     {
         // to do. test
-        client->Create(GwModuleTypeEnum::HST2);
+        // client->Create(GwModuleTypeEnum::HST2);
 
-        client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen));
+        client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen)); // to do.有无线程安全隐患
 
-        client->Connect();
+        // client->Connect();
 
-        client->ConfirmAuthed();
+        //
+        // client->ConfirmAuthed();
     }
 
     buf->retrieve(buflen - leftLen);

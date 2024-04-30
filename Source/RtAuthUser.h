@@ -6,6 +6,8 @@
 
 #include "CachedGatePBStep.h"
 
+#include "RtDstClient.h"
+
 class RtAuthUser
 {
     enum AuthStatus
@@ -31,7 +33,7 @@ public:
 
     const std::string &GetPwdKey() const;
 
-    void AskingRouterFlagTh(AuthRequestParam params);
+    void AskingRouterFlagTh(const AuthRequestParam &params, DstClient *client);
 
 private:
     bool CheckPkgAccurate(pobo::RawPackageType type) const;

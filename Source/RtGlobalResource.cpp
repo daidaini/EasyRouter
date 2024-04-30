@@ -14,6 +14,11 @@ void GlobalResource::Init()
 
     InitEventLoop();
 
+    if (m_Config.m_RouterAuthType == RouterAuthType::ThirdSysAuth)
+    {
+        m_Hst2Auth = std::unique_ptr<RtHst2Auth>(new RtHst2Auth);
+    }
+
     m_AskingThreadPool.start(m_Config.m_RouterAuthThreadCnt);
 }
 
@@ -48,6 +53,11 @@ void GlobalResource::InitEventLoop()
 RtConfig &GlobalResource::Configer()
 {
     return m_Config;
+}
+
+std::unique_ptr<RtHst2Auth> &GlobalResource::Hst2Auther()
+{
+    return m_Hst2Auth;
 }
 
 RtUserSessions &GlobalResource::UserSessions()

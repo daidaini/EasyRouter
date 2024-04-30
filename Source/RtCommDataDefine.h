@@ -16,7 +16,11 @@ using TcpConnIDType = int;
 
 enum class RouterAuthType
 {
-    ThirdSys,
+    // 三方认证
+    ThirdSysAuth,
+    // 账号功夫i则
+    AccountRule,
+    // 空
     None,
 };
 
@@ -25,7 +29,9 @@ inline RouterAuthType TransRouterAuthType(int type)
     switch (type)
     {
     case 1:
-        return RouterAuthType::ThirdSys;
+        return RouterAuthType::ThirdSysAuth;
+    case 2:
+        return RouterAuthType::AccountRule;
     }
 
     return RouterAuthType::None;
@@ -46,6 +52,7 @@ enum class GwModuleTypeEnum
     AMS,
     CTP,
     UT,
+    NONE,
 };
 
 inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
@@ -65,7 +72,34 @@ inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
         {"UT", GwModuleTypeEnum::UT},
     };
 
-    return s_NameMapperType[name];
+    auto it = s_NameMapperType.find(name);
+    if (it == s_NameMapperType.end())
+    {
+        return GwModuleTypeEnum::NONE;
+    }
+
+    return it->second;
+}
+
+inline std::string GwModuleTypeToStr(GwModuleTypeEnum type)
+{
+    static std::map<GwModuleTypeEnum, std::string> s_TypeMapperName{
+        {GwModuleTypeEnum::HST2, "HST2"},
+        {GwModuleTypeEnum::HST3, "HST3"},
+        {GwModuleTypeEnum::DD20, "DD20"},
+        {GwModuleTypeEnum::DDA5, "DDA5"},
+        {GwModuleTypeEnum::HTS_Option, "HTS_Option"},
+        {GwModuleTypeEnum::HTS_Stock, "HTS_Stock"},
+        {GwModuleTypeEnum::JSD, "JSD"},
+        {GwModuleTypeEnum::JSD_Stock, "JSD_Stock"},
+        {GwModuleTypeEnum::JSD_Gold, "JSD_Gold"},
+        {GwModuleTypeEnum::AMS, "AMS"},
+        {GwModuleTypeEnum::CTP, "CTP"},
+        {GwModuleTypeEnum::UT, "UT"},
+        {GwModuleTypeEnum::NONE, "NONE"},
+    };
+
+    return s_TypeMapperName[type];
 }
 
 struct AuthRequestParam
@@ -75,6 +109,7 @@ struct AuthRequestParam
     LoginTypeEnum LoginType;
     AccountTypeEnum AccountType;
 
+    AuthRequestParam() = default;
     AuthRequestParam(
         std::string acc, std::string pwd, LoginTypeEnum loginType, AccountTypeEnum accType)
         : AccountId(std::move(acc)), Password(std::move(pwd)), LoginType(loginType), AccountType(accType)

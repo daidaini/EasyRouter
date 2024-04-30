@@ -17,8 +17,11 @@ public:
     int m_ServerThreadCnt{4};
 
     int m_RouterAuthThreadCnt{4};
-    std::string m_RouterAuthAddr;
+    // std::string m_RouterAuthAddr;
     RouterAuthType m_RouterAuthType;
+
+    // 路由认证所需要的参数字段
+    std::map<std::string, std::string> m_RouterAuthParams;
 
     // 路由目标地址可以有多个分组，从配置中获取
     std::map<GwModuleTypeEnum, std::vector<muduo::net::InetAddress>> m_DstAddrGroups;

@@ -20,7 +20,9 @@
     ],
     "router_auth": {
         "type": 1,
-        "address": "183.129.145.246:7221",
+        "third_system_items": {
+            "op_entrust_way": "7"
+        },
         "thread_cnt": 3
     },
     "annotation": {

@@ -10,33 +10,51 @@ void RtConfig::LoadConfig()
     if (contents.empty())
     {
         fmt::print(fg(fmt::color::pale_violet_red), "缺少配置文件[{}]\n", configFile);
-        exit(-1);
+        exit(0);
     }
-
-    Json::Value jval;
-    Json::Reader jReader;
-    if (!jReader.parse(contents, jval))
+    try
     {
-        fmt::print(fg(fmt::color::pale_violet_red), "[{}]数据格式错误\n", configFile);
-        exit(-1);
+        Json::Value jval;
+        Json::Reader jReader;
+        if (!jReader.parse(contents, jval))
+        {
+            fmt::print(fg(fmt::color::pale_violet_red), "[{}]数据格式错误\n", configFile);
+            exit(-1);
+        }
+
+        Json::Value::Members mems = jval.getMemberNames();
+        m_ServerPort = jval["server_port"].asInt();
+        m_ServerThreadCnt = jval["server_thread_cnt"].asInt();
+
+        auto &dstAddrArr = jval["dst_addrs"];
+        for (auto i = 0U; i < dstAddrArr.size(); ++i)
+        {
+            auto moduleType = GwModuleTypeFromStr(str::Upper(dstAddrArr[i]["dsp"].asString()));
+
+            m_DstAddrGroups[moduleType].push_back(
+                muduo::net::InetAddress(dstAddrArr[i]["ip"].asCString(), dstAddrArr[i]["port"].asInt()));
+        }
+
+        m_RouterAuthThreadCnt = jval["router_auth"]["thread_cnt"].asInt();
+        // m_RouterAuthAddr = jval["router_auth"]["address"].asString();
+        m_RouterAuthType = TransRouterAuthType(jval["router_auth"]["type"].asInt());
+
+        auto &jSubVal = jval["router_auth"]["third_system_items"];
+        if (jSubVal.type() != Json::ValueType::nullValue)
+        {
+            Json::Value::Members mems = jSubVal.getMemberNames();
+
+            for (const auto &item : mems)
+            {
+                m_RouterAuthParams.emplace(item, jSubVal[item].asString());
+            }
+        }
     }
-
-    Json::Value::Members mems = jval.getMemberNames();
-    m_ServerPort = jval["server_port"].asInt();
-    m_ServerThreadCnt = jval["server_thread_cnt"].asInt();
-
-    auto &dstAddrArr = jval["dst_addrs"];
-    for (auto i = 0U; i < dstAddrArr.size(); ++i)
+    catch (const std::runtime_error &err)
     {
-        auto moduleType = GwModuleTypeFromStr(str::Upper(dstAddrArr[i]["dsp"].asString()));
-
-        m_DstAddrGroups[moduleType].push_back(
-            muduo::net::InetAddress(dstAddrArr[i]["ip"].asCString(), dstAddrArr[i]["port"].asInt()));
+        fmt::print("LoadConfig error . {}\n", err.what());
+        exit(0);
     }
-
-    m_RouterAuthThreadCnt = jval["router_auth"]["thread_cnt"].asInt();
-    m_RouterAuthAddr = jval["router_auth"]["address"].asString();
-    m_RouterAuthType = TransRouterAuthType(jval["router_auth"]["type"].asInt());
 }
 
 muduo::net::InetAddress *RtConfig::DstAddr(GwModuleTypeEnum type, size_t index)
