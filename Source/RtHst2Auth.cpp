@@ -91,6 +91,10 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
 
     // 返回标识
     cb(moduleType);
+    if (moduleType != GwModuleTypeEnum::NONE)
+    {
+        AddCachedRsp(params.AccountId, moduleType);
+    }
 }
 
 // 示例：
@@ -135,12 +139,6 @@ GwModuleTypeEnum RtHst2Auth::ParseModuleTypeByData(const std::string &statusStr,
 
     return dstType;
 }
-/*
-void RtHst2Auth::SetModuleTypeCb(AuthRspCallbackFuncType cb)
-{
-    m_RspCb = std::move(cb);
-}
-*/
 
 GwModuleTypeEnum RtHst2Auth::GetCachedRsp(const std::string &accountId)
 {
@@ -158,4 +156,11 @@ GwModuleTypeEnum RtHst2Auth::GetCachedRsp(const std::string &accountId)
     }
 
     return it->second.second;
+}
+
+void RtHst2Auth::AddCachedRsp(const std::string &accountId, GwModuleTypeEnum type)
+{
+    std::lock_guard<std::mutex> guard(m_Mtx);
+
+    m_AccountWithAskingTime[accountId] = std::make_pair(time(nullptr), type);
 }

@@ -20,23 +20,21 @@ public:
 
     ~RtHst2Auth() = default;
 
-    // void SetModuleTypeCb(AuthRspCallbackFuncType cb);
-
     // 请求获取模块类别
     void AskForModuleType(const AuthRequestParam &params, AuthRspCallbackFuncType cb);
 
 private:
     GwModuleTypeEnum GetCachedRsp(const std::string &accountId);
 
+    void AddCachedRsp(const std::string &accountId, GwModuleTypeEnum type);
+
     void DoAuthentication(const AuthRequestParam &params, HST2::Connection *&hsConn, AuthRspCallbackFuncType cb);
 
     GwModuleTypeEnum ParseModuleTypeByData(const std::string &statusStr, LoginTypeEnum loginType);
 
 private:
-    //<account, 认证时间>
+    //<account, <认证时间, dsttype>
     std::map<std::string, std::pair<time_t, GwModuleTypeEnum>> m_AccountWithAskingTime;
 
     std::mutex m_Mtx;
-
-    // AuthRspCallbackFuncType m_RspCb;
 };
