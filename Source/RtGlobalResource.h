@@ -22,7 +22,7 @@ public:
     muduo::net::EventLoop *EvnetLoop(GwModuleTypeEnum type, size_t index);
 
 public:
-    GlobalResource() = default;
+    GlobalResource();
     ~GlobalResource() = default;
 
     // 必须第一步使用

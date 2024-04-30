@@ -1,7 +1,6 @@
 #include "RouterServer.h"
 #include "RtGlobalResource.h"
 #include "PbPkgHandle.h"
-#include "t2sdk_interface.h"
 
 using namespace muduo::net;
 using namespace std::placeholders;

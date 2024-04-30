@@ -31,6 +31,8 @@ public:
 
     const std::string &GetPwdKey() const;
 
+    void AskingRouterFlagTh(AuthRequestParam params);
+
 private:
     bool CheckPkgAccurate(pobo::RawPackageType type) const;
 

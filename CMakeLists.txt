@@ -22,6 +22,7 @@ include_directories(../pb-trade-server/PBFrame/DataDefine)
 add_match_package(StaticData ../pb-trade-server/PBFrame/Source/ PbStaticData.*)
 
 include_directories(../pb-trade-server/ServiceHST2/T2SDK/Include)
+add_package(HST2Sync ./Sync/)
 
 find_library(BOOST_FILESYS_LIB libboost_filesystem.a)
 message("BOOST_FILESYS_LIB : " ${BOOST_FILESYS_LIB})

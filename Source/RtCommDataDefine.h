@@ -67,3 +67,17 @@ inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
 
     return s_NameMapperType[name];
 }
+
+struct AuthRequestParam
+{
+    std::string AccountId;
+    std::string Password;
+    LoginTypeEnum LoginType;
+    AccountTypeEnum AccountType;
+
+    AuthRequestParam(
+        std::string acc, std::string pwd, LoginTypeEnum loginType, AccountTypeEnum accType)
+        : AccountId(std::move(acc)), Password(std::move(pwd)), LoginType(loginType), AccountType(accType)
+    {
+    }
+};

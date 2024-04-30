@@ -258,3 +258,7 @@ const std::string &RtAuthUser::GetPwdKey() const
 {
     return m_Pwdkey;
 }
+
+void RtAuthUser::AskingRouterFlagTh(AuthRequestParam params)
+{
+}

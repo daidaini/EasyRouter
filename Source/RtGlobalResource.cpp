@@ -2,11 +2,19 @@
 
 GlobalResource g_Global;
 
+GlobalResource::GlobalResource()
+    : m_AskingThreadPool("asking_thread_pool")
+
+{
+}
+
 void GlobalResource::Init()
 {
     m_Config.LoadConfig();
 
     InitEventLoop();
+
+    m_AskingThreadPool.start(m_Config.m_RouterAuthThreadCnt);
 }
 
 void GlobalResource::InitEventLoop()
