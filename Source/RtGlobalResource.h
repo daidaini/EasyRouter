@@ -8,6 +8,7 @@
 #include "RtGwClientManager.h"
 #include "muduo/base/ThreadPool.h"
 #include "RtHst2Auth.h"
+#include "RtCheckLocalRule.h"
 
 class GlobalResource
 {
@@ -23,6 +24,8 @@ public:
     muduo::net::EventLoop *EvnetLoop(GwModuleTypeEnum type, size_t index);
 
     std::unique_ptr<RtHst2Auth> &Hst2Auther();
+
+    std::unique_ptr<RtCheckLocalRule> &LocalRuler();
 
 public:
     GlobalResource();
@@ -47,6 +50,7 @@ private:
     std::map<GwModuleTypeEnum, std::vector<muduo::net::EventLoop *>> m_DstEventloopGroup;
 
     std::unique_ptr<RtHst2Auth> m_Hst2Auth;
+    std::unique_ptr<RtCheckLocalRule> m_LocalRuler;
 };
 
 extern GlobalResource g_Global;

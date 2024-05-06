@@ -254,8 +254,20 @@ void RtAuthUser::ProcessLoginRequest()
     this->m_CurrAuthStatus = AuthStatus::ConfirmLogin;
 
     DstClient *client = g_Global.GwClientManager().GetClient(m_TcpConn->getConnId());
+    if (client == nullptr)
+    {
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "client manager get client[{}] failed..", m_TcpConn->getConnId());
+        return;
+    }
 
-    AskingRouterFlagTh(params, client);
+    if (g_Global.Configer().m_RouterAuthType == RouterAuthType::ThirdSysAuth)
+    {
+        AskingRouterFlagTh(params, client);
+    }
+    else if (g_Global.Configer().m_RouterAuthType == RouterAuthType::LocalRule)
+    {
+        CheckLocalRuleTh(params, client);
+    }
 }
 
 const std::string &RtAuthUser::GetCommKey() const
@@ -277,7 +289,25 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
                 params,
                 [client](GwModuleTypeEnum moduleType)
                 {
-                    fmt::print("Confirm module type : {}\n", GwModuleTypeToStr(moduleType));
+                    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
+
+                    client->Create(moduleType);
+                    client->Connect();
+                    client->ConfirmAuthed();
+                });
+        });
+}
+
+void RtAuthUser::CheckLocalRuleTh(const AuthRequestParam &params, DstClient *client)
+{
+    g_Global.AskingThreadPool().run(
+        [params, client, this]()
+        {
+            g_Global.LocalRuler()->CheckRtByAccount(
+                params.AccountId,
+                [client](GwModuleTypeEnum moduleType)
+                {
+                    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from local rule..", GwModuleTypeToStr(moduleType));
 
                     client->Create(moduleType);
                     client->Connect();

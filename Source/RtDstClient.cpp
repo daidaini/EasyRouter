@@ -19,8 +19,14 @@ void DstClient::Create(GwModuleTypeEnum moduleType)
     static std::atomic<size_t> s_ClientIndex = {1};
     m_Name = fmt::format("{}_client_{}", s_ClientIndex.fetch_add(1), m_SrcConnId);
 
-    InetAddress *addr = g_Global.Configer().DstAddr(GwModuleTypeEnum::HST2, s_ClientIndex.load());
-    EventLoop *loop = g_Global.EvnetLoop(GwModuleTypeEnum::HST2, s_ClientIndex.load());
+    InetAddress *addr = g_Global.Configer().DstAddr(moduleType, s_ClientIndex.load());
+    EventLoop *loop = g_Global.EvnetLoop(moduleType, s_ClientIndex.load());
+
+    if (loop == nullptr || addr == nullptr)
+    {
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "获取配置对应信息失败，检查配置是否准确");
+        return;
+    }
 
     m_Client = std::unique_ptr<TcpClient>(new TcpClient(loop, *addr, m_Name));
 
@@ -41,7 +47,7 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
     auto connName = tcpConn->name();
     if (tcpConn->connected())
     {
-        fmt::print(fg(fmt::color::sea_green), "New connection : {}[{}]\n", connName, m_SrcConnId);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "New connection : {}[{}]", connName, m_SrcConnId);
         m_IsConnected.store(true);
 
         PushKeys();
@@ -50,7 +56,7 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
     }
     else
     {
-        fmt::print(fg(fmt::color::orange_red), "Remove connection : {}[{}]\n", connName, m_SrcConnId);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Remove connection : {}[{}]", connName, m_SrcConnId);
         m_IsConnected.store(false);
         // 通知src断开
 
@@ -90,7 +96,8 @@ void DstClient::SendMsg(const std::string &msg)
             }
         }
     }
-    fmt::print(fg(fmt::color::pale_violet_red), "[{}] msg send failed..\n", m_SrcConnId);
+    // fmt::print(fg(fmt::color::pale_violet_red), "[{}] msg send failed..\n", m_SrcConnId);
+    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[{}] msg send failed..", m_SrcConnId);
 }
 
 void DstClient::SendMsg(muduo::net::Buffer *buff)
@@ -103,7 +110,10 @@ void DstClient::SendMsg(muduo::net::Buffer *buff)
 
 void DstClient::Close()
 {
-    m_Client->disconnect();
+    if (m_IsConnected)
+    {
+        m_Client->disconnect();
+    }
 }
 
 void DstClient::SetCommKey(std::string commkey)

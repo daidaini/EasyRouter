@@ -10,7 +10,7 @@ namespace HST2
 
 using namespace HST2;
 
-void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, AuthRspCallbackFuncType cb)
+void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, RtDstCallbackFuncType cb)
 {
     GwModuleTypeEnum moduleType = GetCachedRsp(params.AccountId);
     if (moduleType != GwModuleTypeEnum::NONE)
@@ -33,7 +33,7 @@ void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, AuthRspCallbac
     }
 }
 
-void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&hsConn, AuthRspCallbackFuncType cb)
+void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&hsConn, RtDstCallbackFuncType cb)
 {
     hsConn->PrepareRequest(331100, "客户登录", 0);
 

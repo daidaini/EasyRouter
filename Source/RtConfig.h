@@ -17,7 +17,7 @@ public:
     int m_ServerThreadCnt{4};
 
     int m_RouterAuthThreadCnt{4};
-    // std::string m_RouterAuthAddr;
+
     RouterAuthType m_RouterAuthType;
 
     // 路由认证所需要的参数字段

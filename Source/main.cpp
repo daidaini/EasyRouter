@@ -11,6 +11,7 @@ void MainOnTimer()
 
     if (nowDate != SpdLogger::Instance().CurrentDate())
     {
+        // 日志重置
         SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
     }
 }

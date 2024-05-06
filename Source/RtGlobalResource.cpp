@@ -20,6 +20,10 @@ void GlobalResource::Init()
     {
         m_Hst2Auth = std::unique_ptr<RtHst2Auth>(new RtHst2Auth);
     }
+    else if (m_Config.m_RouterAuthType == RouterAuthType::LocalRule)
+    {
+        m_LocalRuler = std::unique_ptr<RtCheckLocalRule>(new RtCheckLocalRule);
+    }
 
     m_AskingThreadPool.start(m_Config.m_RouterAuthThreadCnt);
 }
@@ -60,6 +64,11 @@ RtConfig &GlobalResource::Configer()
 std::unique_ptr<RtHst2Auth> &GlobalResource::Hst2Auther()
 {
     return m_Hst2Auth;
+}
+
+std::unique_ptr<RtCheckLocalRule> &GlobalResource::LocalRuler()
+{
+    return m_LocalRuler;
 }
 
 RtUserSessions &GlobalResource::UserSessions()

@@ -34,6 +34,7 @@ public:
     const std::string &GetPwdKey() const;
 
     void AskingRouterFlagTh(const AuthRequestParam &params, DstClient *client);
+    void CheckLocalRuleTh(const AuthRequestParam &params, DstClient *client);
 
 private:
     bool CheckPkgAccurate(pobo::RawPackageType type) const;

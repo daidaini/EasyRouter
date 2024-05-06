@@ -9,8 +9,6 @@
  *
  */
 
-using AuthRspCallbackFuncType = std::function<void(GwModuleTypeEnum)>;
-
 class RtHst2Auth
 {
     const int s_AccountAuthValidSeconds = 10; // 账号认证有效时间
@@ -21,14 +19,14 @@ public:
     ~RtHst2Auth() = default;
 
     // 请求获取模块类别
-    void AskForModuleType(const AuthRequestParam &params, AuthRspCallbackFuncType cb);
+    void AskForModuleType(const AuthRequestParam &params, RtDstCallbackFuncType cb);
 
 private:
     GwModuleTypeEnum GetCachedRsp(const std::string &accountId);
 
     void AddCachedRsp(const std::string &accountId, GwModuleTypeEnum type);
 
-    void DoAuthentication(const AuthRequestParam &params, HST2::Connection *&hsConn, AuthRspCallbackFuncType cb);
+    void DoAuthentication(const AuthRequestParam &params, HST2::Connection *&hsConn, RtDstCallbackFuncType cb);
 
     GwModuleTypeEnum ParseModuleTypeByData(const std::string &statusStr, LoginTypeEnum loginType);
 

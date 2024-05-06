@@ -18,8 +18,8 @@ enum class RouterAuthType
 {
     // 三方认证
     ThirdSysAuth,
-    // 账号功夫i则
-    AccountRule,
+    // 本地规则
+    LocalRule,
     // 空
     None,
 };
@@ -31,7 +31,7 @@ inline RouterAuthType TransRouterAuthType(int type)
     case 1:
         return RouterAuthType::ThirdSysAuth;
     case 2:
-        return RouterAuthType::AccountRule;
+        return RouterAuthType::LocalRule;
     }
 
     return RouterAuthType::None;
@@ -40,20 +40,22 @@ inline RouterAuthType TransRouterAuthType(int type)
 // 网关模块类型定义
 enum class GwModuleTypeEnum
 {
-    HST2, // 恒生T2
-    HST3, // 恒生T3
-    DD20, // 顶点A2
-    DDA5, // 顶点A5
-    HTS_Option,
-    HTS_Stock,
-    JSD, // 金仕达期权
-    JSD_Stock,
-    JSD_Gold,
-    AMS,
-    CTP,
-    UT,
-    NONE,
+    NONE = -1,
+    HST2 = 1, // 恒生T2
+    HST3 = 2, // 恒生T3
+    DD20 = 3, // 顶点A2
+    DDA5 = 4, // 顶点A5
+    HTS_Option = 5,
+    HTS_Stock = 6,
+    JSD = 7, // 金仕达期权
+    JSD_Stock = 8,
+    JSD_Gold = 9,
+    AMS = 10,
+    CTP = 11,
+    UT = 12,
 };
+
+using RtDstCallbackFuncType = std::function<void(GwModuleTypeEnum)>;
 
 inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
 {

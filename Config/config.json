@@ -3,7 +3,7 @@
     "server_thread_cnt": 4,
     "dst_addrs": [
         {
-            "dsp": "hst2",
+            "dsp": "HST2",
             "ip": "127.0.0.1",
             "port": 20002
         },
@@ -13,13 +13,18 @@
             "port": 20002
         },
         {
-            "dsp": "dda5",
+            "dsp": "JSD_Stock",
+            "ip": "192.168.11.56",
+            "port": 20001
+        },
+        {
+            "dsp": "DDA5",
             "ip": "127.0.0.1",
             "port": 20001
         }
     ],
     "router_auth": {
-        "type": 1,
+        "type": 2,
         "third_system_items": {
             "op_entrust_way": "7"
         },
@@ -27,10 +32,10 @@
     },
     "annotation": {
         "1": "server_port 是路由服务监听端口",
-        "2": "dst_addrs 配置需要路由转发到的交易网关地址信息",
-        "3": "router_auth 是用于配置如何获取路由规则的信息",
+        "2": "server_thread_cnt配置server端处理请求的工作线程数量",
+        "3": "dst_addrs 配置需要路由转发到的交易网关地址信息",
         "4": "dst_addrs.dsp 是配置具体对应的我们哪个模块的网关",
-        "5": "router_auth.type是配置当前是哪种路由规则，暂时将跟恒生系统确认标识定义为1",
-        "6": "server_thread_cnt配置server端处理请求的工作线程数量"
+        "5": "router_auth 是用于配置如何获取路由规则的信息",
+        "6": "router_auth.type是配置当前是哪种路由规则，暂时将跟恒生系统确认标识定义为1"
     }
 }

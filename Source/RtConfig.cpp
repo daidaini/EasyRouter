@@ -29,14 +29,14 @@ void RtConfig::LoadConfig()
         auto &dstAddrArr = jval["dst_addrs"];
         for (auto i = 0U; i < dstAddrArr.size(); ++i)
         {
-            auto moduleType = GwModuleTypeFromStr(str::Upper(dstAddrArr[i]["dsp"].asString()));
+            auto moduleType = GwModuleTypeFromStr(dstAddrArr[i]["dsp"].asString());
 
             m_DstAddrGroups[moduleType].push_back(
                 muduo::net::InetAddress(dstAddrArr[i]["ip"].asCString(), dstAddrArr[i]["port"].asInt()));
         }
 
         m_RouterAuthThreadCnt = jval["router_auth"]["thread_cnt"].asInt();
-        // m_RouterAuthAddr = jval["router_auth"]["address"].asString();
+
         m_RouterAuthType = TransRouterAuthType(jval["router_auth"]["type"].asInt());
 
         auto &jSubVal = jval["router_auth"]["third_system_items"];
