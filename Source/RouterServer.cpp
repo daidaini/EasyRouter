@@ -62,7 +62,7 @@ void RouterServer::OnMessage(const muduo::net::TcpConnectionPtr &conn, muduo::ne
         return;
     }
 
-    if (!client->IsAuthed())
+    if (!client->IsValid())
     {
         return ProcessAuthMessage(conn, buf, client);
     }

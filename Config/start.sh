@@ -12,7 +12,7 @@ ps_out=(`ps -ef | grep $EXE_NAME | grep -v 'grep' | grep -v $0 | awk '{print $2}
 for procid in ${ps_out[@]}
 do
      exeinfo=(`ls /proc/$procid/exe -l`)
-     if [ "${exeinfo[10]}" == "$curexe" ]; then
+     if [ "${exeinfo[10]}" == "$CURR_EXE" ]; then
          echo 发现重复进程 $procid，自动杀死进程
          kill -9 $procid
      fi    

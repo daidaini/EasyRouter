@@ -26,7 +26,7 @@ public:
     void SetLoginRequest(std::string loginReq);
 
     void ConfirmAuthed();
-    bool IsAuthed() const;
+    bool IsValid() const;
 
     void SendMsg(const std::string &msg);
     void SendMsg(muduo::net::Buffer *buff);
@@ -37,7 +37,7 @@ private:
     void PushKeys();
 
 private:
-    std::unique_ptr<TcpClient> m_Client;
+    std::unique_ptr<TcpClient> m_TcpClient;
 
     std::atomic_bool m_IsConnected{false};
 

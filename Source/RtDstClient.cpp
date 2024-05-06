@@ -10,7 +10,7 @@ DstClient::DstClient(int srcConnId)
 
 void DstClient::Create(GwModuleTypeEnum moduleType)
 {
-    if (m_Client != nullptr)
+    if (m_TcpClient != nullptr)
     {
         fmt::print("Create client repeatly\n");
         return;
@@ -28,18 +28,22 @@ void DstClient::Create(GwModuleTypeEnum moduleType)
         return;
     }
 
-    m_Client = std::unique_ptr<TcpClient>(new TcpClient(loop, *addr, m_Name));
+    m_TcpClient = std::unique_ptr<TcpClient>(new TcpClient(loop, *addr, m_Name));
 
-    m_Client->setConnectionCallback([this](const TcpConnectionPtr &conn)
-                                    { this->OnConnect(conn); });
+    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Creating client for dst addr[{}] to connect", addr->toIpPort());
 
-    m_Client->setMessageCallback([this](const TcpConnectionPtr &conn, Buffer *buf, Timestamp time)
-                                 { this->OnResponse(conn, buf, time); });
+    m_TcpClient->setConnectionCallback([this](const TcpConnectionPtr &conn)
+                                       { this->OnConnect(conn); });
+
+    m_TcpClient->setMessageCallback([this](const TcpConnectionPtr &conn, Buffer *buf, Timestamp time)
+                                    { this->OnResponse(conn, buf, time); });
 }
 
 void DstClient::Connect()
 {
-    m_Client->connect();
+    m_TcpClient->disableRetry();
+
+    m_TcpClient->connect();
 }
 
 void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
@@ -63,7 +67,7 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
         auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
         if (connPtr != nullptr)
         {
-            connPtr->forceCloseWithDelay(1.0);
+            connPtr->forceCloseWithDelay(0.2);
         }
     }
 }
@@ -82,7 +86,7 @@ void DstClient::SendMsg(const std::string &msg)
 {
     if (m_IsConnected)
     {
-        return m_Client->connection()->send(msg.data(), msg.size());
+        return m_TcpClient->connection()->send(msg.data(), msg.size());
     }
 
     if (!m_IsAuthed)
@@ -92,7 +96,7 @@ void DstClient::SendMsg(const std::string &msg)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             if (m_IsConnected)
             {
-                return m_Client->connection()->send(msg.data(), msg.size());
+                return m_TcpClient->connection()->send(msg.data(), msg.size());
             }
         }
     }
@@ -104,7 +108,7 @@ void DstClient::SendMsg(muduo::net::Buffer *buff)
 {
     if (m_IsConnected)
     {
-        m_Client->connection()->send(buff);
+        m_TcpClient->connection()->send(buff);
     }
 }
 
@@ -112,7 +116,7 @@ void DstClient::Close()
 {
     if (m_IsConnected)
     {
-        m_Client->disconnect();
+        m_TcpClient->disconnect();
     }
 }
 
@@ -141,7 +145,7 @@ void DstClient::ConfirmAuthed()
     m_IsAuthed = true;
 }
 
-bool DstClient::IsAuthed() const
+bool DstClient::IsValid() const
 {
-    return m_IsAuthed;
+    return m_IsAuthed && m_IsConnected;
 }
