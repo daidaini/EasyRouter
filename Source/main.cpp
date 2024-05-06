@@ -3,7 +3,17 @@
 #include "RtGlobalResource.h"
 
 bool g_IsIPV6 = false;
-double g_kOnTimerInterval = 10.0; // 秒
+
+void MainOnTimer()
+{
+    int nowDate, nowTime = 0;
+    STD::GetDateTime(nowDate, nowTime);
+
+    if (nowDate != SpdLogger::Instance().CurrentDate())
+    {
+        SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +22,7 @@ int main(int argc, char *argv[])
     muduo::net::InetAddress listenAddr(g_Global.Configer().m_ServerPort, false, g_IsIPV6);
     muduo::net::EventLoop serverLoop;
 
-    // serverLoop->runEvery()
+    serverLoop.runEvery(10.0, MainOnTimer); // 定时10秒
 
     RouterServer rtServer(&serverLoop, listenAddr);
     rtServer.Start();

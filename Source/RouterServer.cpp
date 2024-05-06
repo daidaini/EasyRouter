@@ -72,9 +72,6 @@ void RouterServer::OnMessage(const muduo::net::TcpConnectionPtr &conn, muduo::ne
         EraseAuthUser(conn->getConnId());
     }
 
-    // to do . test
-    //  直接转发到网关
-
     if (client != nullptr)
     {
         client->SendMsg(buf);
@@ -133,15 +130,7 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
     }
     else if (result == 6011)
     {
-        // to do. test
-        // client->Create(GwModuleTypeEnum::HST2);
-
-        client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen)); // to do.有无线程安全隐患
-
-        // client->Connect();
-
-        //
-        // client->ConfirmAuthed();
+        client->SetLoginRequest(std::string(buf->peek(), buflen - leftLen)); // to do.有无线程安全隐患 ？
     }
 
     buf->retrieve(buflen - leftLen);

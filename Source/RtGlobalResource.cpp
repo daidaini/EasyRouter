@@ -10,6 +10,8 @@ GlobalResource::GlobalResource()
 
 void GlobalResource::Init()
 {
+    SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
+
     m_Config.LoadConfig();
 
     InitEventLoop();

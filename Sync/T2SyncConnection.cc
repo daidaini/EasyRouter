@@ -202,7 +202,7 @@ namespace HST2
         auto result = ParseRspPkg(ret);
         if (::Failed(result.ErrCode))
         {
-            SpdLogger::Instance().WriteLog(LogType::Trade, LogLevel::Info, "[Response] Error:({})", result.ErrMsg);
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[HST2][Response] Error:({})", result.ErrMsg);
         }
         else
         {
@@ -349,12 +349,12 @@ namespace HST2
         }
 
         buffer[len] = '\0';
-        SpdLogger::Instance().WriteLog(LogType::Trade, LogLevel::Info, "[Response][{}:{}]:{}", m_CurrUnpackerRecIndex, m_CurrUnpackerRecCnt, buffer);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[HST2][Response][{}:{}]:{}", m_CurrUnpackerRecIndex, m_CurrUnpackerRecCnt, buffer);
     }
 
     void Connection::LogRequest() const
     {
-        std::string logstr = fmt::format("[Request]:({}, {})", m_CurrReqInfo.FunID, m_CurrReqInfo.FuncName);
+        std::string logstr = fmt::format("[HST2][Request]:({}, {})", m_CurrReqInfo.FunID, m_CurrReqInfo.FuncName);
 
         for (const auto &item : m_RequestParams)
         {
@@ -368,6 +368,6 @@ namespace HST2
             }
         }
 
-        SpdLogger::Instance().WriteLog(LogType::Trade, LogLevel::Info, logstr);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, logstr);
     }
 }
