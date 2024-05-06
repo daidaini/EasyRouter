@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 14)
 include(../Common.cmake)
 set(PRJ "HDGwRouter")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -ggdb") 
+project(${PRJ})
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -ggdb")
 
 include_directories(../GeneralThirdPart/)
 add_package(jsoncpp ../GeneralThirdPart/jsoncpp)
@@ -38,10 +40,21 @@ else()
 endif()
 
 find_library(Z_LIB libz.a)
+
 if(Z_LIB STREQUAL "Z_LIB-NOTFOUND")
     message(FATAL_ERROR "Not find zlib...")
 else()
     message(STATUS "ZLIB: " ${Z_LIB})
+endif()
+
+find_package(Python COMPONENTS Interpreter Development)
+
+if(Python_FOUND)
+    message("PYTHON_INCLUDE_DIR = " ${Python_INCLUDE_DIRS})
+    message("Python_LIBRARIES = " ${Python_LIBRARIES})
+    include_directories(${Python_INCLUDE_DIRS})
+else()
+    message(STATUS "CPython not found")
 endif()
 
 SET(THIRD_LIBRARY_PATH ${THIRD_LIBRARY_PATH} ../pb-trade-server/ServiceHST2/T2SDK/linux.x64/lib)
@@ -52,7 +65,6 @@ add_definitions(-DSPDLOG_FMT_EXTERNAL)
 
 add_executable(${PRJ} ${all_file})
 
-target_link_libraries(${PRJ} PRIVATE ${BOOST_FILESYS_LIB} ${OPENSSL_LIBRARIES} ${Z_LIB} libt2sdk.so)
+target_link_libraries(${PRJ} PRIVATE ${BOOST_FILESYS_LIB} ${OPENSSL_LIBRARIES} ${Z_LIB} ${Python_LIBRARIES} libt2sdk.so)
 
 target_link_directories(${PRJ} PUBLIC ${THIRD_LIBRARY_PATH})
-
