@@ -27,7 +27,7 @@ public:
     ~RtAuthUser();
 
     // 返回功能号 (小于0为失败)
-    int ProcessMsg(const pobo::CommMessage &msg);
+    int ProcessMsg(const pobo::CommMessage &msg, DstClient *client);
 
     const std::string &GetCommKey() const;
 
@@ -48,7 +48,7 @@ private:
     void SwapCommunicationKey();
 
     void SwapPasswordKey();
-    void ProcessLoginRequest();
+    void ProcessLoginRequest(DstClient *client);
 
     void SendMsgBack(const std::string &rsp);
 

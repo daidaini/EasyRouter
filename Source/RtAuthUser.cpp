@@ -18,19 +18,12 @@ RtAuthUser::~RtAuthUser()
     delete m_CachedMsgBuf;
 }
 
-int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg)
+int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg, DstClient *client)
 {
     auto type = PoboPkgHandle::CheckPackage(msg.Head);
-    if (type == RawPackageType::Unknown)
+    if (type == RawPackageType::Unknown || !CheckPkgAccurate(type))
     {
-        // to do. // 此处可以埋点检测下未知的包的多少，可以考虑对连接的IP做管理
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "Unnknown package type[{}] ..", (int)msg.Head.Sign);
-        return -1;
-    }
-
-    if (!CheckPkgAccurate(type))
-    {
-        // log
         return -1;
     }
 
@@ -67,7 +60,7 @@ int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg)
         }
         else if (m_ReqStep.FunctionId() == 6011)
         {
-            ProcessLoginRequest();
+            ProcessLoginRequest(client);
             return 6011;
         }
     }
@@ -192,8 +185,6 @@ void RtAuthUser::SwapPasswordKey()
 {
     char randkey[128]{};
     STD::GenerateDesKey((u_char *)randkey, sizeof(randkey), 32);
-    // AES_set_decrypt_key((u_char *)randkey, 256, &m_PwdDecodeKey);
-    // AES_set_encrypt_key((u_char *)randkey, 256, &m_PwdEncodeKey);
 
     m_RspStep.Init();
 
@@ -238,7 +229,7 @@ void RtAuthUser::SendMsgBack(const std::string &rsp)
     }
 }
 
-void RtAuthUser::ProcessLoginRequest()
+void RtAuthUser::ProcessLoginRequest(DstClient *client)
 {
     AES_KEY decodeKey{};
     AES_set_decrypt_key((u_char *)m_Pwdkey.data(), 256, &decodeKey);
@@ -247,18 +238,10 @@ void RtAuthUser::ProcessLoginRequest()
 
     params.Password = m_ReqStep.GetBaseFieldValueString_Encrypted(STEP_JYMM, decodeKey);
     params.AccountId = m_ReqStep.GetStepValueByID(STEP_DLZH);
-    // fmt::print("pwd = {}, account = {}\n", tradePwd, loginAccount);
     params.LoginType = m_ReqStep.GetLoginType();
     params.AccountType = static_cast<AccountTypeEnum>(m_ReqStep.GetFieldValueChar(STEP_ZHLB));
 
     this->m_CurrAuthStatus = AuthStatus::ConfirmLogin;
-
-    DstClient *client = g_Global.GwClientManager().GetClient(m_TcpConn->getConnId());
-    if (client == nullptr)
-    {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "client manager get client[{}] failed..", m_TcpConn->getConnId());
-        return;
-    }
 
     if (g_Global.Configer().m_RouterAuthType == RouterAuthType::ThirdSysAuth)
     {

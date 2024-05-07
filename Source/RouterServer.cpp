@@ -113,13 +113,12 @@ void RouterServer::ProcessAuthMessage(const muduo::net::TcpConnectionPtr &conn, 
 
     auto &msg = cachedMsgs.front();
 
-    int result = authUser->ProcessMsg(msg);
+    int result = authUser->ProcessMsg(msg, client);
     if (result <= 0)
     {
-        fmt::print("AuthUser ProcessMsg failed..\n");
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "AuthUser ProcessMsg failed..");
     }
-
-    if (result == 1)
+    else if (result == 1)
     {
         client->SetCommKey(authUser->GetCommKey());
     }
