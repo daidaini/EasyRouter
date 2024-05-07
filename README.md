@@ -30,10 +30,11 @@
     - client和客户端连接的管理，必然是全局管理，因此在线程池中也能操作（前提是需要将客户端连接信息传入线程）
 
 6. 线程数量统计
-    - 主线程，可以负责服务EventLoop的loop循环.  (1)
-    - TcpServer内部的threadpool，可以外部设置进去.(4-32)
-    - 跟网关交互的Eventloop的线程. (2-4)
-    - 三方认证线程池,，可以外部设置进去 (4-32)
+    - 主线程，可以负责服务EventLoop的loop循环.  (1) (HDGwRouter)
+    - TcpServer内部的threadpool，可以外部设置进去.(4-32) (RouterServer)
+    - 跟网关交互的Eventloop的线程. (2-4)  (LoopThread)
+    - 三方认证线程池,，可以外部设置进去 (4-32) (AskingThread)
+    - 日志线程，可以负责服务EventLoop的loop循环.  (2) (HDGwRouter)
 
 7. 全局资源归纳
     - 目标交易网关地址信息
