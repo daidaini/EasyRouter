@@ -7,7 +7,16 @@ set(PRJ "HDGwRouter")
 
 project(${PRJ})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -ggdb")
+if(CMAKE_BUILD_TYPE)
+else()
+    SET(CMAKE_BUILD_TYPE debug) # 默认debug
+endif()
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -ldl")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -ggdb -pipe")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -w")
+
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../run/HDGwRouter)
 
 include_directories(../GeneralThirdPart/)
 add_package(jsoncpp ../GeneralThirdPart/jsoncpp)

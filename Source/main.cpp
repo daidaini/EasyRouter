@@ -16,7 +16,7 @@ bool ParseArgs(int argCnt, char *argVal[])
     }
 
     args::ArgumentParser parser("This is a router program to trans data to different HuiDian's gateways.",
-                                "Use command './HDGwRouter -h\' to know the usage.");
+                                "Use command \'./HDGwRouter -h\' to know the usage.");
 
     args::HelpFlag help(parser, "help", "Show usage", {'h', "help"});
     args::ValueFlag<int> serverPort(parser, "", "Set port for server", {'p', "port"});
