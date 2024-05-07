@@ -18,6 +18,7 @@ RtCheckLocalRule::RtCheckLocalRule()
     }
     else
     {
+        std::lock_guard<std::mutex> guard(m_PyModuleMtx);
         m_CheckAccountFunc = PyObject_GetAttrString(m_PyModule, s_CheckAccountFunc.data());
         if (m_CheckAccountFunc == nullptr)
         {
@@ -64,7 +65,9 @@ void RtCheckLocalRule::CheckRtByAccount(const std::string &accountId, RtDstCallb
     PyObject *pArgs = PyTuple_New(1);
     PyTuple_SetItem(pArgs, 0, pArg);
 
+    std::unique_lock<std::mutex> lock(m_PyModuleMtx);
     PyObject *pResult = PyObject_CallObject(m_CheckAccountFunc, pArgs);
+    lock.unlock();
     if (pResult != nullptr)
     {
         if (PyLong_Check(pResult))

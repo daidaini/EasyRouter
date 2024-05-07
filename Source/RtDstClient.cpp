@@ -31,6 +31,11 @@ void DstClient::Create(GwModuleTypeEnum moduleType)
     m_TcpClient = std::unique_ptr<TcpClient>(new TcpClient(loop, *addr, m_Name));
 
     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Creating client for dst addr[{}] to connect", addr->toIpPort());
+    if (m_TcpClient == nullptr)
+    {
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "Create client failed", addr->toIpPort());
+        return;
+    }
 
     m_TcpClient->setConnectionCallback([this](const TcpConnectionPtr &conn)
                                        { this->OnConnect(conn); });

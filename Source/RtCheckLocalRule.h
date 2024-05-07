@@ -24,10 +24,10 @@ private:
 private:
     PyObject *m_PyModule = nullptr;
     PyObject *m_CheckAccountFunc = nullptr;
+    std::mutex m_PyModuleMtx;
 
     //<account,  dsttype>
-    std::map<std::string, GwModuleTypeEnum>
-        m_AccountWithDstType;
+    std::map<std::string, GwModuleTypeEnum> m_AccountWithDstType;
 
     std::mutex m_Mtx;
 };

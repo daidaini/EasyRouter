@@ -89,8 +89,6 @@ int main(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
-    SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
-
     getchar();
 
     g_Global.Init();
