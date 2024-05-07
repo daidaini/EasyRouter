@@ -2,7 +2,73 @@
 
 #include "RtGlobalResource.h"
 
+#include "args.hxx"
+#include "RtVersion.h"
+
 bool g_IsIPV6 = false;
+
+// 返回true表示程序需要继续运行，false则结束
+bool ParseArgs(int argCnt, char *argVal[])
+{
+    if (argCnt < 2)
+    {
+        return true;
+    }
+
+    args::ArgumentParser parser("This is a router program to trans data to different HuiDian's gateways.",
+                                "Use command './HDGwRouter -h\' to know the usage.");
+
+    args::HelpFlag help(parser, "help", "Show usage", {'h', "help"});
+    args::ValueFlag<int> serverPort(parser, "", "Set port for server", {'p', "port"});
+    args::ValueFlag<std::string> ipPatternOption(parser, "", "Set if use ipv6 or ipv4", {"ip"});
+    args::ValueFlag<int> thSizeOption(parser, "", "Set the size of server's thread pool", {'t', "th_size"});
+    args::Flag version(parser, "version", "show version info", {'v', "version"});
+
+    try
+    {
+        parser.ParseCLI(argCnt, argVal);
+    }
+    catch (args::Help)
+    {
+        std::cout << parser;
+        return false;
+    }
+    catch (args::ParseError e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        return false;
+    }
+    catch (args::ValidationError e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        return false;
+    }
+
+    if (version)
+    {
+        fmt::print(fg(fmt::color::green), "Version : {}\n", HDGwRouter::VersionInfo);
+        return false;
+    }
+
+    if (serverPort)
+    {
+        g_Global.Configer().m_ServerPort = args::get(serverPort);
+    }
+
+    if (ipPatternOption)
+    {
+        g_IsIPV6 = (args::get(ipPatternOption) == "ipv6");
+    }
+
+    if (thSizeOption)
+    {
+        g_Global.Configer().m_ServerThreadCnt = args::get(thSizeOption);
+    }
+
+    return true;
+}
 
 void MainOnTimer()
 {
@@ -18,6 +84,15 @@ void MainOnTimer()
 
 int main(int argc, char *argv[])
 {
+    if (!ParseArgs(argc, argv))
+    {
+        exit(EXIT_SUCCESS);
+    }
+
+    SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
+
+    getchar();
+
     g_Global.Init();
 
     muduo::net::InetAddress listenAddr(g_Global.Configer().m_ServerPort, false, g_IsIPV6);
@@ -30,5 +105,5 @@ int main(int argc, char *argv[])
 
     serverLoop.loop();
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }

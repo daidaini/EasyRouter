@@ -3,7 +3,7 @@
 GlobalResource g_Global;
 
 GlobalResource::GlobalResource()
-    : m_AskingThreadPool("asking_thread_pool")
+    : m_AskingThreadPool("AskingThread")
 
 {
 }
@@ -45,7 +45,7 @@ void GlobalResource::InitEventLoop()
                 std::unique_ptr<muduo::net::EventLoopThread>(new muduo::net::EventLoopThread(
                     [](EventLoop *loop)
                     {
-                        fmt::print("thread[{}] init sucucess..\n", ::syscall(SYS_gettid));
+                        fmt::print("LoopThread[{}] init sucucess..\n", ::syscall(SYS_gettid));
                     },
                     "LoopThread"));
 

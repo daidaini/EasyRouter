@@ -8,8 +8,7 @@ using namespace pobo;
 
 RouterServer::RouterServer(muduo::net::EventLoop *loop, const muduo::net::InetAddress &addr)
 {
-    m_TcpServer = std::unique_ptr<TcpServer>(
-        new TcpServer(loop, addr, "RouterServer"));
+    m_TcpServer = std::unique_ptr<TcpServer>(new TcpServer(loop, addr, "RouterServer"));
 }
 
 RouterServer::~RouterServer()
