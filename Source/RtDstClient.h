@@ -18,6 +18,8 @@ public:
     void OnConnect(const TcpConnectionPtr &tcpConn);
     void OnResponse(const TcpConnectionPtr &conn, Buffer *buf, muduo::Timestamp time);
 
+    // 设置源对端Ip
+    void SetSrcConnPeerIp(std::string peerIp);
     // 设置通讯密钥
     void SetCommKey(std::string commkey);
     // 设置密码密钥
@@ -50,6 +52,7 @@ private:
     std::string m_Commkey;
 
     std::string m_EncrypedLoginReq;
+    std::string m_SrcPeerIp;
 
     bool m_IsAuthed{false};
 };

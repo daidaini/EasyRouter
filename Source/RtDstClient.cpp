@@ -125,6 +125,11 @@ void DstClient::Close()
     }
 }
 
+void DstClient::SetSrcConnPeerIp(std::string peerIp)
+{
+    m_SrcPeerIp = std::move(peerIp);
+}
+
 void DstClient::SetCommKey(std::string commkey)
 {
     m_Commkey = std::move(commkey);
@@ -142,7 +147,7 @@ void DstClient::SetLoginRequest(std::string loginReq)
 
 void DstClient::PushKeys()
 {
-    SendMsg(fmt::format("Router,{},{},", m_Commkey, m_Pwdkey));
+    SendMsg(fmt::format("Router,{},{},{},", m_Commkey, m_Pwdkey, m_SrcPeerIp));
 }
 
 void DstClient::ConfirmAuthed()

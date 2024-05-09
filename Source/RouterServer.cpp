@@ -34,6 +34,8 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
     {
         // 创建client
         std::unique_ptr<DstClient> client = std::unique_ptr<DstClient>(new DstClient(connId));
+        client->SetSrcConnPeerIp(conn->peerAddress().toIp());
+
         g_Global.GwClientManager().AddClient(connId, std::move(client));
 
         g_Global.UserSessions().AddSession(conn);
