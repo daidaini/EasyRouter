@@ -21,7 +21,7 @@ public:
 
     RtGwClientManager &GwClientManager();
 
-    muduo::net::EventLoop *EvnetLoop(GwModuleTypeEnum type, size_t index);
+    muduo::net::EventLoop *EvnetLoop(ModuleGroupType type, size_t index);
 
     std::unique_ptr<RtHst2Auth> &Hst2Auther();
 
@@ -47,7 +47,7 @@ private:
     RtGwClientManager m_GwClientManager;
 
     std::vector<std::unique_ptr<muduo::net::EventLoopThread>> m_EventLoopThreads;
-    std::map<GwModuleTypeEnum, std::vector<muduo::net::EventLoop *>> m_DstEventloopGroup;
+    std::map<ModuleGroupType, std::vector<muduo::net::EventLoop *>> m_DstEventloopGroup;
 
     std::unique_ptr<RtHst2Auth> m_Hst2Auth;
     std::unique_ptr<RtCheckLocalRule> m_LocalRuler;

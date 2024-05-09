@@ -4,22 +4,26 @@
     "dst_addrs": [
         {
             "group": "HST2",
+            "biz": "option",
             "ip": "127.0.0.1",
             "port": 20002
         },
         {
             "group": "HST2",
             "ip": "192.168.11.56",
+            "biz": "option",
             "port": 20002
         },
         {
             "group": "JSD_Stock",
             "ip": "192.168.11.56",
+            "biz": "stock",
             "port": 20001
         },
         {
             "group": "DDA5",
             "ip": "127.0.0.1",
+            "biz": "stock",
             "port": 20001
         }
     ],
@@ -35,9 +39,10 @@
         "2": "server_thread_cnt配置server端处理请求的工作线程数量，如果不配置，可以在启动选项中'-t'指定",
         "3": "dst_addrs 配置需要路由转发到的交易网关地址信息",
         "4": "dst_addrs.group 是配置具体对应的我们哪个模块的网关，(选项可为HST2、DDA5等网关模块标识)",
-        "5": "router_auth 是用于配置如何获取路由规则的信息",
-        "6": "router_auth.type是配置当前是哪种路由规则，类型1标识跟恒生系统确认路由目标，类型2是通过check_local_rule.py脚本的check_account方法确定路由目标",
-        "7": "router_auth.third_system_items配置三方模块认证需要的额外的字段名及字段值",
-        "8": "router_auth.thread_cnt配置用于router auth的线程池大小"
+        "5": "dst_addrs.biz 用以配置是什么业务，期权(option)还是股票(stock),或是两融(margin)",
+        "6": "router_auth 是用于配置如何获取路由规则的信息",
+        "7": "router_auth.type是配置当前是哪种路由规则，类型1标识跟恒生系统确认路由目标，类型2是通过check_local_rule.py脚本的check_account方法确定路由目标",
+        "8": "router_auth.third_system_items配置三方模块认证需要的额外的字段名及字段值",
+        "9": "router_auth.thread_cnt配置用于router auth的线程池大小"
     }
 }

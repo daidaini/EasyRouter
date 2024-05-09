@@ -86,7 +86,7 @@ RtGwClientManager &GlobalResource::GwClientManager()
     return m_GwClientManager;
 }
 
-muduo::net::EventLoop *GlobalResource::EvnetLoop(GwModuleTypeEnum type, size_t index)
+muduo::net::EventLoop *GlobalResource::EvnetLoop(ModuleGroupType type, size_t index)
 {
     auto it = m_DstEventloopGroup.find(type);
     if (it != m_DstEventloopGroup.end())

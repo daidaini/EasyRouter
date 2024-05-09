@@ -8,7 +8,7 @@ DstClient::DstClient(int srcConnId)
     m_SrcConnId = srcConnId;
 }
 
-void DstClient::Create(GwModuleTypeEnum moduleType)
+void DstClient::Create(ModuleGroupType type)
 {
     if (m_TcpClient != nullptr)
     {
@@ -19,8 +19,8 @@ void DstClient::Create(GwModuleTypeEnum moduleType)
     static std::atomic<size_t> s_ClientIndex = {1};
     m_Name = fmt::format("{}_client_{}", s_ClientIndex.fetch_add(1), m_SrcConnId);
 
-    InetAddress *addr = g_Global.Configer().DstAddr(moduleType, s_ClientIndex.load());
-    EventLoop *loop = g_Global.EvnetLoop(moduleType, s_ClientIndex.load());
+    InetAddress *addr = g_Global.Configer().DstAddr(type, s_ClientIndex.load());
+    EventLoop *loop = g_Global.EvnetLoop(type, s_ClientIndex.load());
 
     if (loop == nullptr || addr == nullptr)
     {

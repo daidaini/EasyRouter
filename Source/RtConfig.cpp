@@ -39,9 +39,16 @@ void RtConfig::LoadConfig()
         for (auto i = 0U; i < dstAddrArr.size(); ++i)
         {
             auto moduleType = GwModuleTypeFromStr(dstAddrArr[i]["group"].asString());
+            auto loginType = LoginTypeFromStr(dstAddrArr[i]["biz"].asString());
+            if (moduleType == GwModuleTypeEnum::NONE || loginType == LoginTypeEnum::None)
+            {
+                SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "Check the config of item \"dst_addrs\" whether it is correct");
+                continue;
+            }
 
-            m_DstAddrGroups[moduleType].push_back(
-                muduo::net::InetAddress(dstAddrArr[i]["ip"].asCString(), dstAddrArr[i]["port"].asInt()));
+            m_DstAddrGroups[std::make_pair(moduleType, loginType)]
+                .push_back(
+                    muduo::net::InetAddress(dstAddrArr[i]["ip"].asCString(), dstAddrArr[i]["port"].asInt()));
         }
 
         m_RouterAuthThreadCnt = jval["router_auth"]["thread_cnt"].asInt();
@@ -66,7 +73,7 @@ void RtConfig::LoadConfig()
     }
 }
 
-muduo::net::InetAddress *RtConfig::DstAddr(GwModuleTypeEnum type, size_t index)
+muduo::net::InetAddress *RtConfig::DstAddr(ModuleGroupType type, size_t index)
 {
     auto it = m_DstAddrGroups.find(type);
 

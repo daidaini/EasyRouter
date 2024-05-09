@@ -55,6 +55,8 @@ enum class GwModuleTypeEnum
     UT = 12,
 };
 
+using ModuleGroupType = std::pair<GwModuleTypeEnum, LoginTypeEnum>;
+
 using RtDstCallbackFuncType = std::function<void(GwModuleTypeEnum)>;
 
 inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
@@ -102,6 +104,21 @@ inline std::string GwModuleTypeToStr(GwModuleTypeEnum type)
     };
 
     return s_TypeMapperName[type];
+}
+
+inline LoginTypeEnum LoginTypeFromStr(std::string name)
+{
+    static std::map<std::string, LoginTypeEnum> s_LoginTypeMapperNames{
+        {"option", LoginTypeEnum::Option},
+        {"stock", LoginTypeEnum::Stock},
+        {"margin", LoginTypeEnum::Margin}};
+
+    auto it = s_LoginTypeMapperNames.find(name);
+    if (it == s_LoginTypeMapperNames.end())
+    {
+        return LoginTypeEnum::None;
+    }
+    return it->second;
 }
 
 struct AuthRequestParam

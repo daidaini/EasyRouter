@@ -11,7 +11,7 @@ public:
     explicit DstClient(int srcConnId);
     ~DstClient() = default;
 
-    void Create(GwModuleTypeEnum moduleType);
+    void Create(ModuleGroupType type);
 
     void Connect();
 
