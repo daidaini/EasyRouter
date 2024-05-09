@@ -80,6 +80,8 @@ void MainOnTimer()
         // 日志重置
         SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
     }
+
+    g_Global.Configer().CheckBackCutFileOnTimer();
 }
 
 int main(int argc, char *argv[])
@@ -96,10 +98,10 @@ int main(int argc, char *argv[])
     muduo::net::InetAddress listenAddr(g_Global.Configer().m_ServerPort, false, g_IsIPV6);
     muduo::net::EventLoop serverLoop;
 
-    serverLoop.runEvery(10.0, MainOnTimer); // 定时10秒
-
     RouterServer rtServer(&serverLoop, listenAddr);
     rtServer.Start();
+
+    serverLoop.runEvery(10.0, MainOnTimer); // 定时10秒
 
     serverLoop.loop();
 

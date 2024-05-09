@@ -12,6 +12,8 @@ public:
 
     muduo::net::InetAddress *DstAddr(ModuleGroupType type, size_t index);
 
+    void CheckBackCutFileOnTimer();
+
 public:
     uint16_t m_ServerPort{0};
     int m_ServerThreadCnt{4};
@@ -25,4 +27,6 @@ public:
 
     // 路由目标地址可以有多个分组，从配置中获取
     std::map<ModuleGroupType, std::vector<muduo::net::InetAddress>> m_DstAddrGroups;
+
+    std::atomic_bool m_IsNeedBackcut{false};
 };

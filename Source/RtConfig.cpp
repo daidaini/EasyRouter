@@ -3,6 +3,8 @@
 #include "PoboTool.h"
 #include "StringFunc.h"
 
+#include <boost/filesystem.hpp>
+
 void RtConfig::LoadConfig()
 {
     const std::string configFile = "./config.json";
@@ -85,4 +87,32 @@ muduo::net::InetAddress *RtConfig::DstAddr(ModuleGroupType type, size_t index)
     }
 
     return nullptr;
+}
+
+// 中信会用到全局回切
+void RtConfig::CheckBackCutFileOnTimer()
+{
+    namespace fs = boost::filesystem;
+    const std::string backcutFile = "./backcut";
+    if (!fs::exists(backcutFile))
+    {
+        m_IsNeedBackcut.store(false);
+        return;
+    }
+
+    auto contents = pobo::ReadContentsFromFile(backcutFile);
+    if (contents.empty())
+    {
+        m_IsNeedBackcut.store(false);
+        return;
+    }
+
+    if (!contents.empty() && contents.front() == '1')
+    {
+        m_IsNeedBackcut.store(true);
+    }
+    else
+    {
+        m_IsNeedBackcut.store(false);
+    }
 }

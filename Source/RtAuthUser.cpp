@@ -265,20 +265,32 @@ const std::string &RtAuthUser::GetPwdKey() const
 
 void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *client)
 {
-    g_Global.AskingThreadPool().run(
-        [params, client, this]()
-        {
-            g_Global.Hst2Auther()->AskForModuleType(
-                params,
-                [client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
-                {
-                    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
+    if (!g_Global.Configer().m_IsNeedBackcut)
+    {
+        g_Global.AskingThreadPool().run(
+            [params, client, this]()
+            {
+                g_Global.Hst2Auther()->AskForModuleType(
+                    params,
+                    [client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
+                    {
+                        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
 
-                    client->Create(std::make_pair(moduleType, loginType));
-                    client->Connect();
-                    client->ConfirmAuthed();
-                });
-        });
+                        client->Create(std::make_pair(moduleType, loginType));
+                        client->Connect();
+                        client->ConfirmAuthed();
+                    });
+            });
+    }
+    else
+    {
+        // 回切，则需要恒生认证，直接连接恒生网关
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Back cutted, route to hst2..");
+
+        client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType));
+        client->Connect();
+        client->ConfirmAuthed();
+    }
 }
 
 void RtAuthUser::CheckLocalRuleTh(const AuthRequestParam &params, DstClient *client)
