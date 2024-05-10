@@ -91,9 +91,9 @@ int main(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
-    getchar();
-
     g_Global.Init();
+
+    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Global resouces init finished.");
 
     muduo::net::InetAddress listenAddr(g_Global.Configer().m_ServerPort, false, g_IsIPV6);
     muduo::net::EventLoop serverLoop;
@@ -102,6 +102,8 @@ int main(int argc, char *argv[])
     rtServer.Start();
 
     serverLoop.runEvery(10.0, MainOnTimer); // 定时10秒
+
+    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Server started, begin to loop..");
 
     serverLoop.loop();
 

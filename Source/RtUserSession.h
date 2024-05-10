@@ -22,7 +22,7 @@ public:
 
         lock.unlock();
         fmt::print(fg(fmt::color::sea_green), "{}\n", logstr);
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, logstr);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, logstr);
     }
 
     void EraseSession(TcpConnIDType connId)
@@ -34,7 +34,6 @@ public:
         if (it != m_ConnMapper.end())
         {
             // 删除用户
-            // to do .notice?
             m_ConnMapper.erase(it);
 
             userCnt = m_ConnMapper.size();
@@ -43,7 +42,7 @@ public:
 
         std::string logstr = fmt::format("用户[{}]断开连接成功, 当前总用户数 = {}", connId, userCnt);
         fmt::print(fg(fmt::color::orange_red), "{}\n", logstr);
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, std::move(logstr));
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, std::move(logstr));
     }
 
     muduo::net::TcpConnectionPtr GetTcpConn(TcpConnIDType connId)

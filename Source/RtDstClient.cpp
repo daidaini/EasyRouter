@@ -17,7 +17,7 @@ void DstClient::Create(ModuleGroupType type)
     }
 
     static std::atomic<size_t> s_ClientIndex = {1};
-    m_Name = fmt::format("{}_client_{}", s_ClientIndex.fetch_add(1), m_SrcConnId);
+    m_Name = fmt::format("d{}_client_s{}", s_ClientIndex.fetch_add(1), m_SrcConnId);
 
     InetAddress *addr = g_Global.Configer().DstAddr(type, s_ClientIndex.load());
     EventLoop *loop = g_Global.EvnetLoop(type, s_ClientIndex.load());
@@ -53,10 +53,9 @@ void DstClient::Connect()
 
 void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
 {
-    auto connName = tcpConn->name();
     if (tcpConn->connected())
     {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "New connection : {}[{}]", connName, m_SrcConnId);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "New connection : {}", m_Name);
         m_IsConnected.store(true);
 
         PushKeys();
@@ -65,13 +64,13 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
     }
     else
     {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Remove connection : {}[{}]", connName, m_SrcConnId);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Remove connection : {}", m_Name);
         m_IsConnected.store(false);
-        // 通知src断开
 
         auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
         if (connPtr != nullptr)
         {
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Active disconnect user connection[{}]", m_SrcConnId);
             connPtr->forceCloseWithDelay(0.2);
         }
     }
@@ -146,7 +145,9 @@ void DstClient::SetLoginRequest(std::string loginReq)
 
 void DstClient::PushKeys()
 {
-    SendMsg(fmt::format("Router,{},{},{},", m_Commkey, m_Pwdkey, m_SrcPeerIp));
+    std::string pushmsg = fmt::format("Router,{},{},{},", m_Commkey, m_Pwdkey, m_SrcPeerIp);
+    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Debug, "[Pushmsg]{}", pushmsg);
+    SendMsg(pushmsg);
 }
 
 void DstClient::ConfirmAuthed()
