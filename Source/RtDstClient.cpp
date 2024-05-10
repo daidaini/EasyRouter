@@ -71,7 +71,8 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
         if (connPtr != nullptr)
         {
             SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Active disconnect user connection[{}]", m_SrcConnId);
-            connPtr->forceCloseWithDelay(0.2);
+            // connPtr->forceCloseWithDelay(0.2);
+            connPtr->shutdown();
         }
     }
 }
@@ -104,7 +105,11 @@ void DstClient::SendMsg(const std::string &msg)
             }
         }
     }
-    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[{}] msg send failed..", m_SrcConnId);
+    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error,
+                                   "[{}] Message send failed, dst connection status = {}", m_SrcConnId, m_IsConnected.load());
+
+    // 主动断开连接
+    m_TcpClient->disconnect();
 }
 
 void DstClient::SendMsg(muduo::net::Buffer *buff)
