@@ -1,4 +1,5 @@
 #include "RtGlobalResource.h"
+#include "muduo/base/Logging.h"
 
 GlobalResource g_Global;
 
@@ -10,6 +11,8 @@ GlobalResource::GlobalResource()
 
 void GlobalResource::Init()
 {
+    muduo::Logger::setLogLevel(Logger::LogLevel::WARN);
+
     SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
 
     m_Config.LoadConfig();
