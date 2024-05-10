@@ -12,7 +12,7 @@ void DstClient::Create(ModuleGroupType type)
 {
     if (m_TcpClient != nullptr)
     {
-        fmt::print("Create client repeatly\n");
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Create client repeatly");
         return;
     }
 
@@ -105,7 +105,6 @@ void DstClient::SendMsg(const std::string &msg)
             }
         }
     }
-    // fmt::print(fg(fmt::color::pale_violet_red), "[{}] msg send failed..\n", m_SrcConnId);
     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[{}] msg send failed..", m_SrcConnId);
 }
 

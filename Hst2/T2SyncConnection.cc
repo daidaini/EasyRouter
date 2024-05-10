@@ -26,17 +26,14 @@ namespace HST2
         m_HsConfiger = GenerateConfiger();
         if (m_HsConfiger == nullptr)
         {
-            fmt::print("GenerateConfiger 失败.\n");
-            return;
-            // throw std::runtime_error("GenerateConfiger 失败.");
+            throw std::runtime_error("GenerateConfiger 失败.");
         }
 
         m_HsConnectionPtr = NewConnection(m_HsConfiger);
         if (m_HsConnectionPtr == nullptr)
         {
-            fmt::print("构造Connection时 NewConnection 失败.\n");
             return;
-            // throw std::runtime_error("构造Connection时 NewConnection 失败.");
+            throw std::runtime_error("构造Connection时 NewConnection 失败.");
         }
         m_HsConnectionPtr->AddRef();
     }

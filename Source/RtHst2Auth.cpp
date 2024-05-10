@@ -12,24 +12,31 @@ using namespace HST2;
 
 void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, RtDstCallbackFuncType cb)
 {
-    GwModuleTypeEnum moduleType = GetCachedRsp(params.AccountId);
-    if (moduleType != GwModuleTypeEnum::NONE)
+    try
     {
-        return cb(moduleType);
+        GwModuleTypeEnum moduleType = GetCachedRsp(params.AccountId);
+        if (moduleType != GwModuleTypeEnum::NONE)
+        {
+            return cb(moduleType);
+        }
+
+        Connection *hsConn = HST2::g_HsConnPool.GetConnectWithCheckConnectFlag();
+        if (hsConn == nullptr)
+        {
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Get hst2 connection failed..");
+            return cb(GwModuleTypeEnum::NONE);
+        }
+
+        DoAuthentication(params, hsConn, std::move(cb));
+
+        if (hsConn != nullptr)
+        {
+            HST2::g_HsConnPool.PutConnect(hsConn); // 返还连接
+        }
     }
-
-    Connection *hsConn = HST2::g_HsConnPool.GetConnectWithCheckConnectFlag();
-    if (hsConn == nullptr)
+    catch (const std::exception &e)
     {
-        fmt::print("Get hst2 connection failed..\n");
-        return cb(GwModuleTypeEnum::NONE);
-    }
-
-    DoAuthentication(params, hsConn, std::move(cb));
-
-    if (hsConn != nullptr)
-    {
-        HST2::g_HsConnPool.PutConnect(hsConn); // 返还连接
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "RtHst2Auth::AskForModuleType happend exception, [{}]", e.what());
     }
 }
 
@@ -60,8 +67,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
     auto result = hsConn->MID_SendToData();
     if (::Failed(result.ErrCode))
     {
-        fmt::print("Do hst2 request failed.. [{}]{}\n", result.ErrCode, result.ErrMsg);
-
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Do hst2 request failed.. [{}]{}\n", result.ErrCode, result.ErrMsg);
         if (result.ErrCode == GateError::NET_ERROR)
         {
             HST2::g_HsConnPool.ReleaseConnect(hsConn);
@@ -75,7 +81,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
 
     if (!hsConn->MID_MoveNextRec())
     {
-        fmt::print("Get hst2 empty record\n");
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Get hst2 empty record");
         return cb(GwModuleTypeEnum::NONE);
     }
 

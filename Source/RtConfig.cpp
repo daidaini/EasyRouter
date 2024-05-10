@@ -21,7 +21,7 @@ void RtConfig::LoadConfig()
         if (!jReader.parse(contents, jval))
         {
             fmt::print(fg(fmt::color::pale_violet_red), "[{}]数据格式错误\n", configFile);
-            exit(-1);
+            exit(0);
         }
 
         Json::Value::Members mems = jval.getMemberNames();

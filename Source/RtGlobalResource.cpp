@@ -45,7 +45,7 @@ void GlobalResource::InitEventLoop()
                 std::unique_ptr<muduo::net::EventLoopThread>(new muduo::net::EventLoopThread(
                     [](EventLoop *loop)
                     {
-                        fmt::print("LoopThread[{}] init sucucess..\n", ::syscall(SYS_gettid));
+                        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "LoopThread[{}] init sucucess..", ::syscall(SYS_gettid));
                     },
                     "LoopThread"));
 
