@@ -17,7 +17,7 @@ void DstClient::Create(ModuleGroupType type)
     }
 
     static std::atomic<size_t> s_ClientIndex = {1};
-    InetAddress *addr = g_Global.Configer().DstAddr(type, s_ClientIndex.load());
+    InetAddress *addr = g_Global.Configer().DstAddr(type, s_ClientIndex.fetch_add(1));
     EventLoop *loop = g_Global.EvnetLoop(type, s_ClientIndex.load());
 
     m_Name = fmt::format("S{}_Client_D{}", m_SrcConnId, addr->toIp());
