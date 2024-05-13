@@ -104,12 +104,6 @@ std::string RtAuthUser::UnLoadPackageStatic(const pobo::CommMessage &msg)
 
 void RtAuthUser::SwapCommunicationKey()
 {
-    if (m_ReqStep.FunctionId() != 1)
-    {
-        // log error
-        return;
-    }
-
     char txmy[33]{};
     m_ReqStep.GetFieldValueString(STEP_TXMY, txmy, sizeof(txmy));
     AES_set_encrypt_key((u_char *)txmy, 256, &m_CommEncryptKey);
@@ -206,6 +200,21 @@ void RtAuthUser::SwapPasswordKey()
     SendMsgBack(m_RspStep.ToString());
 }
 
+void RtAuthUser::DoErrorRsp(GateErrorStruct err)
+{
+    m_RspStep.Init();
+
+    m_RspStep.SetBaseFieldValueInt(STEP_CODE, static_cast<int>(err.ErrCode));
+    m_RspStep.SetBaseFieldValueString(STEP_MSG, err.ErrMsg);
+    m_RspStep.SetBaseFieldValueInt(STEP_FUNC, m_ReqStep.FunctionId());
+    m_RspStep.SetBaseFieldValueInt(STEP_REQUESTNO, m_ReqStep.Requestno());
+    m_RspStep.SetBaseFieldValueInt(STEP_RETURNNUM, 1);
+    m_RspStep.SetBaseFieldValueInt(STEP_TOTALNUM, 1);
+    m_RspStep.SetBaseFieldValueInt(STEP_SESSION, m_TcpConn != nullptr ? m_TcpConn->getConnId() : 0);
+
+    SendMsgBack(m_RspStep.ToString());
+}
+
 void RtAuthUser::SendMsgBack(const std::string &rsp)
 {
     const char *src = rsp.data();
@@ -241,6 +250,11 @@ void RtAuthUser::ProcessLoginRequest(DstClient *client)
     params.LoginType = m_ReqStep.GetLoginType();
     params.AccountType = static_cast<AccountTypeEnum>(m_ReqStep.GetFieldValueChar(STEP_ZHLB));
 
+    if (params.AccountId.empty() || params.Password.empty() || params.LoginType == LoginTypeEnum::None)
+    {
+        return DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "登录请求入参有误，请检查"});
+    }
+
     this->m_CurrAuthStatus = AuthStatus::ConfirmLogin;
 
     if (g_Global.Configer().m_RouterAuthType == RouterAuthType::ThirdSysAuth)
@@ -272,16 +286,16 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
             {
                 g_Global.Hst2Auther()->AskForModuleType(
                     params,
-                    [client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
+                    [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
                     {
                         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
                         if (moduleType == GwModuleTypeEnum::NONE)
                         {
-                            return;
+                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "获取目标网关失败"});
                         }
                         if (!client->Create(std::make_pair(moduleType, loginType)))
                         {
-                            return;
+                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
                         }
                         client->Connect();
                         client->ConfirmAuthed();
@@ -295,7 +309,7 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
 
         if (!client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType)))
         {
-            return;
+            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
         }
         client->Connect();
         client->ConfirmAuthed();
@@ -309,16 +323,16 @@ void RtAuthUser::CheckLocalRuleTh(const AuthRequestParam &params, DstClient *cli
         {
             g_Global.LocalRuler()->CheckRtByAccount(
                 params.AccountId,
-                [client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
+                [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
                 {
                     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from local rule..", GwModuleTypeToStr(moduleType));
                     if (moduleType == GwModuleTypeEnum::NONE)
                     {
-                        return;
+                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "获取目标网关失败"});
                     }
                     if (!client->Create(std::make_pair(moduleType, loginType)))
                     {
-                        return;
+                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
                     }
                     client->Connect();
                     client->ConfirmAuthed();

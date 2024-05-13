@@ -50,6 +50,7 @@ private:
     void SwapPasswordKey();
     void ProcessLoginRequest(DstClient *client);
 
+    void DoErrorRsp(GateErrorStruct err);
     void SendMsgBack(const std::string &rsp);
 
 private:
