@@ -3,7 +3,7 @@
 /*对恒生模块中的连接类做适配修改
  */
 
-#include "PbDataDefine.h"
+#include "GatewayDefine.h"
 #include "StringFunc.h"
 #include "ConnPool.h"
 
