@@ -321,11 +321,6 @@ namespace HST2
 
     void Connection::LogOneRspRecord() const
     {
-        if (!SpdLogger::LoggerParams().IsMidLogPrintAll() && m_CurrUnpackerRecIndex + 1 > SpdLogger::LoggerParams().MidRspPrintCount())
-        {
-            return;
-        }
-
         char buffer[10240];
         int len = 0;
         if (m_IF2UnPacker != nullptr && m_IF2UnPacker->GetRowCount() > 0 && m_IF2UnPacker->GetColCount() > 0)
