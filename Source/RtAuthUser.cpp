@@ -275,8 +275,14 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
                     [client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
                     {
                         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
-
-                        client->Create(std::make_pair(moduleType, loginType));
+                        if (moduleType == GwModuleTypeEnum::NONE)
+                        {
+                            return;
+                        }
+                        if (!client->Create(std::make_pair(moduleType, loginType)))
+                        {
+                            return;
+                        }
                         client->Connect();
                         client->ConfirmAuthed();
                     });
@@ -287,7 +293,10 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
         // 回切，则需要恒生认证，直接连接恒生网关
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Back cutted, route to hst2..");
 
-        client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType));
+        if (!client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType)))
+        {
+            return;
+        }
         client->Connect();
         client->ConfirmAuthed();
     }
@@ -303,8 +312,14 @@ void RtAuthUser::CheckLocalRuleTh(const AuthRequestParam &params, DstClient *cli
                 [client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
                 {
                     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from local rule..", GwModuleTypeToStr(moduleType));
-
-                    client->Create(std::make_pair(moduleType, loginType));
+                    if (moduleType == GwModuleTypeEnum::NONE)
+                    {
+                        return;
+                    }
+                    if (!client->Create(std::make_pair(moduleType, loginType)))
+                    {
+                        return;
+                    }
                     client->Connect();
                     client->ConfirmAuthed();
                 });

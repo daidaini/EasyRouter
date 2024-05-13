@@ -11,7 +11,7 @@ public:
     explicit DstClient(int srcConnId);
     ~DstClient() = default;
 
-    void Create(ModuleGroupType type);
+    bool Create(ModuleGroupType type);
 
     void Connect();
 

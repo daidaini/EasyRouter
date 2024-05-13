@@ -8,33 +8,32 @@ DstClient::DstClient(int srcConnId)
     m_SrcConnId = srcConnId;
 }
 
-void DstClient::Create(ModuleGroupType type)
+bool DstClient::Create(ModuleGroupType type)
 {
     if (m_TcpClient != nullptr)
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Create client repeatly");
-        return;
+        return false;
     }
 
     static std::atomic<size_t> s_ClientIndex = {1};
     InetAddress *addr = g_Global.Configer().DstAddr(type, s_ClientIndex.fetch_add(1));
     EventLoop *loop = g_Global.EvnetLoop(type, s_ClientIndex.load());
 
-    m_Name = fmt::format("S{}_Client_D{}", m_SrcConnId, addr->toIp());
-
     if (loop == nullptr || addr == nullptr)
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "获取配置对应信息失败，检查配置是否准确");
-        return;
+        return false;
     }
 
+    m_Name = fmt::format("S{}_Client_D{}", m_SrcConnId, addr->toIp());
     m_TcpClient = std::unique_ptr<TcpClient>(new TcpClient(loop, *addr, m_Name));
 
     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Creating client for dst addr[{}] to connect", addr->toIpPort());
     if (m_TcpClient == nullptr)
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "Create client failed", addr->toIpPort());
-        return;
+        return false;
     }
 
     m_TcpClient->setConnectionCallback([this](const TcpConnectionPtr &conn)
@@ -42,6 +41,8 @@ void DstClient::Create(ModuleGroupType type)
 
     m_TcpClient->setMessageCallback([this](const TcpConnectionPtr &conn, Buffer *buf, Timestamp time)
                                     { this->OnResponse(conn, buf, time); });
+
+    return true;
 }
 
 void DstClient::Connect()
