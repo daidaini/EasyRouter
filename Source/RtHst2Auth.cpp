@@ -74,8 +74,9 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
             hsConn = nullptr;
         }
 
-        // return cb(GwModuleTypeEnum::NONE);
         // to do testing code
+        // AddCachedRsp(params.AccountId, GwModuleTypeEnum::HST2);
+        // 失败就路由到恒生。
         return cb(GwModuleTypeEnum::HST2);
     }
 
