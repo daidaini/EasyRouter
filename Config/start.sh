@@ -18,4 +18,5 @@ do
      fi    
 done
 
-nohup $CURR_EXE >> $CURRENT_PATH/log/cmd_log.txt 2>&1 &
+$CURR_EXE -v
+$CURR_EXE >> $CURRENT_PATH/log/cmd_log.txt 2>&1 &

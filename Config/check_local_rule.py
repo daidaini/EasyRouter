@@ -1,7 +1,15 @@
 #!/usr/bin/python3
 
+#字典映射，模块对应的值固定不变
 g_GwTypeDict = {
-    'HST2': 1, 'DDA5': 4, 'JSD_Stock' : 8
+    'HST2': 1, 
+    'HST3': 2,
+    'DD20': 3, 
+    'DDA5': 4, 
+    'HTS_Option': 5, 
+    'HTS_Stock': 6, 
+    'JSD': 7, 
+    'JSD_Stock' : 8
 }
 
 def check_account(account : str) :
