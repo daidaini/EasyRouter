@@ -37,7 +37,7 @@ void DoAuthentication(Connection *hsConn, std::string account, std::string pwd)
     }
 
     std::string statusStr = hsConn->MID_GetString("asset_prop_status_str");
-    fmt::print(fg(fmt::color::green), "asset_prop_status_str : {}\n");
+    fmt::print(fg(fmt::color::green), "asset_prop_status_str : {}\n", statusStr);
 }
 
 int main(int argc, char *argv[])
