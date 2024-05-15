@@ -17,14 +17,14 @@ void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, RtDstCallbackF
         GwModuleTypeEnum moduleType = GetCachedRsp(params.AccountId);
         if (moduleType != GwModuleTypeEnum::NONE)
         {
-            return cb(moduleType);
+            return cb(moduleType, "");
         }
 
         Connection *hsConn = HST2::g_HsConnPool.GetConnectWithCheckConnectFlag();
         if (hsConn == nullptr)
         {
             SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Get hst2 connection failed..");
-            return cb(GwModuleTypeEnum::NONE);
+            return cb(GwModuleTypeEnum::NONE, "[汇点]连接恒生认证系统失败");
         }
 
         DoAuthentication(params, hsConn, std::move(cb));
@@ -67,7 +67,8 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
     auto result = hsConn->MID_SendToData();
     if (::Failed(result.ErrCode))
     {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Do hst2 request failed.. [{}]{}\n", result.ErrCode, result.ErrMsg);
+        std::string errmsg = fmt::format("[{}]{}", result.ErrCode, result.ErrMsg);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Do hst2 request failed.. {}\n", errmsg);
         if (result.ErrCode == GateError::NET_ERROR)
         {
             HST2::g_HsConnPool.ReleaseConnect(hsConn);
@@ -75,32 +76,36 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
         }
 
         // to do testing code
-        // AddCachedRsp(params.AccountId, GwModuleTypeEnum::HST2);
-        // 失败就路由到恒生。
-        return cb(GwModuleTypeEnum::HST2);
+        // 失败就路由到恒生?
+        // return cb(GwModuleTypeEnum::HST2, "");
+        return cb(GwModuleTypeEnum::NONE, std::move(errmsg));
     }
 
     if (!hsConn->MID_MoveNextRec())
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Get hst2 empty record");
-        return cb(GwModuleTypeEnum::NONE);
+        return cb(GwModuleTypeEnum::NONE, "[汇点]获取认证返回为空");
     }
 
     std::string statusStr = hsConn->MID_GetString("asset_prop_status_str");
 
-    // to do .. testing code
+    // 柜台没有迁移标识，认为还没切，则返回恒生标识
     if (statusStr.empty())
     {
-        return cb(GwModuleTypeEnum::HST2);
+        return cb(GwModuleTypeEnum::HST2, "");
     }
 
     GwModuleTypeEnum moduleType = ParseModuleTypeByData(statusStr, params.LoginType);
 
     // 返回标识
-    cb(moduleType);
     if (moduleType != GwModuleTypeEnum::NONE)
     {
+        cb(moduleType, "");
         AddCachedRsp(params.AccountId, moduleType);
+    }
+    else
+    {
+        cb(moduleType, "[汇点]未配置正确的模块");
     }
 }
 

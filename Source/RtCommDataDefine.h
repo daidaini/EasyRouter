@@ -57,7 +57,7 @@ enum class GwModuleTypeEnum
 
 using ModuleGroupType = std::pair<GwModuleTypeEnum, LoginTypeEnum>;
 
-using RtDstCallbackFuncType = std::function<void(GwModuleTypeEnum)>;
+using RtDstCallbackFuncType = std::function<void(GwModuleTypeEnum, std::string)>;
 
 inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
 {

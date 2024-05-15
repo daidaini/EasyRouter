@@ -47,19 +47,19 @@ void RtCheckLocalRule::CheckRtByAccount(const std::string &accountId, RtDstCallb
     GwModuleTypeEnum gwType = GetCachedRsp(accountId);
     if (gwType != GwModuleTypeEnum::NONE)
     {
-        return cb(gwType);
+        return cb(gwType, "");
     }
 
     if (m_PyModule == nullptr || m_CheckAccountFunc == nullptr)
     {
-        return cb(gwType);
+        return cb(gwType, "[汇点]存在模块加载失败");
     }
 
     PyObject *pArg = PyUnicode_FromString(accountId.c_str());
     if (pArg == nullptr)
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "PyUnicode_FromString failed..");
-        return cb(gwType);
+        return cb(gwType, "[汇点]加载参数失败");
     }
 
     PyObject *pArgs = PyTuple_New(1);
@@ -76,11 +76,14 @@ void RtCheckLocalRule::CheckRtByAccount(const std::string &accountId, RtDstCallb
         }
     }
 
-    cb(gwType);
-
     if (gwType != GwModuleTypeEnum::NONE)
     {
         AddCachedRsp(accountId, gwType);
+        cb(gwType, "");
+    }
+    else
+    {
+        cb(gwType, "[汇点]未配置正确的模块");
     }
 
     Py_DECREF(pResult);

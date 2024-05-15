@@ -286,16 +286,16 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
             {
                 g_Global.Hst2Auther()->AskForModuleType(
                     params,
-                    [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
+                    [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType, std::string errmsg)
                     {
                         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
                         if (moduleType == GwModuleTypeEnum::NONE)
                         {
-                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "获取目标网关失败"});
+                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, std::move(errmsg)});
                         }
                         if (!client->Create(std::make_pair(moduleType, loginType)))
                         {
-                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
+                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
                         }
                         client->Connect();
                         client->ConfirmAuthed();
@@ -309,7 +309,7 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
 
         if (!client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType)))
         {
-            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
+            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
         }
         client->Connect();
         client->ConfirmAuthed();
@@ -323,16 +323,16 @@ void RtAuthUser::CheckLocalRuleTh(const AuthRequestParam &params, DstClient *cli
         {
             g_Global.LocalRuler()->CheckRtByAccount(
                 params.AccountId,
-                [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType)
+                [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType, std::string errmsg)
                 {
                     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from local rule..", GwModuleTypeToStr(moduleType));
                     if (moduleType == GwModuleTypeEnum::NONE)
                     {
-                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "获取目标网关失败"});
+                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, std::move(errmsg)});
                     }
                     if (!client->Create(std::make_pair(moduleType, loginType)))
                     {
-                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
+                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
                     }
                     client->Connect();
                     client->ConfirmAuthed();
