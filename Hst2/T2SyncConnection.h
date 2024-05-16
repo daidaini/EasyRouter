@@ -89,6 +89,8 @@ namespace HST2
 
         bool IsNeedNextPack() const;
 
+        std::string GetErrmsg(int code) const;
+
     private:
         // 配置对象，各个连接对象共享，不用管理释放
         CConfigInterface *m_HsConfiger = nullptr;

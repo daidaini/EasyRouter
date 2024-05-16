@@ -73,6 +73,14 @@ namespace HST2
             std::move(param.front()), std::stoi(param.back()));
     }
 
+    std::string Connection::GetErrmsg(int code) const
+    {
+        std::string tmp = m_HsConnectionPtr->GetErrorMsg(code);
+        char errmsg[512]{};
+        pobo::GB2312ToUTF8((char *)tmp.data(), tmp.size(), errmsg, sizeof(errmsg));
+        return errmsg;
+    }
+
     bool Connection::Create()
     {
         if (m_HsConnectionPtr == nullptr)
@@ -83,14 +91,14 @@ namespace HST2
         int result = m_HsConnectionPtr->Create(NULL);
         if (result != 0)
         {
-            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "初始t2连接对象(Create)失败:[{}]", m_HsConnectionPtr->GetErrorMsg(result));
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "初始t2连接对象(Create)失败:[{}]", GetErrmsg(result));
             return false;
         }
 
         result = m_HsConnectionPtr->Connect(s_ConnectTimeout);
         if (result != 0)
         {
-            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "t2尝试连接(Connect)失败:[{}]", m_HsConnectionPtr->GetErrorMsg(result));
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "t2尝试连接(Connect)失败:[{}]", GetErrmsg(result));
             return false;
         }
 
@@ -181,7 +189,7 @@ namespace HST2
         int ret = m_HsConnectionPtr->SendBiz(m_CurrReqInfo.FunID, m_IF2Packer, 0, m_CurrReqInfo.SysNode, 1);
         if (ret < 0)
         {
-            return {GateError::NET_ERROR, m_HsConnectionPtr->GetErrorMsg(ret)};
+            return {GateError::NET_ERROR, GetErrmsg(ret)};
         }
 
         m_IF2UnPacker = nullptr;
@@ -190,10 +198,7 @@ namespace HST2
         ret = m_HsConnectionPtr->RecvBiz(ret, (void **)&m_IF2UnPacker, s_ConnectTimeout, 0);
         if (ret < 0)
         {
-            std::string tmp = m_HsConnectionPtr->GetErrorMsg(ret);
-            char errmsg[256]{};
-            pobo::GB2312ToUTF8((char *)tmp.data(), tmp.size(), errmsg, sizeof(errmsg));
-            return {GateError::BIZ_ERROR, errmsg};
+            return {GateError::BIZ_ERROR, GetErrmsg(ret)};
         }
 
         auto result = ParseRspPkg(ret);
