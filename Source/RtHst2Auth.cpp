@@ -2,6 +2,7 @@
 #include "RtGlobalResource.h"
 #include "StringFunc.h"
 #include "STD.h"
+#include "PoboTool.h"
 
 namespace HST2
 {
@@ -89,6 +90,9 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
 
     std::string statusStr = hsConn->MID_GetString("asset_prop_status_str");
 
+    std::string last_op_station = hsConn->MID_GetString("last_op_station");
+    auto lastIpMac = ParseLastLoginInfo(last_op_station);
+
     // 柜台没有迁移标识，认为还没切，则返回恒生标识
     if (statusStr.empty())
     {
@@ -150,6 +154,45 @@ GwModuleTypeEnum RtHst2Auth::ParseModuleTypeByData(const std::string &statusStr,
     }
 
     return dstType;
+}
+
+namespace
+{
+    std::string ParseIpFromOpStationByRegex(const std::string &opStation)
+    {
+        auto ip = pobo::SubStringByRegex(opStation, ".*IIP=(.*?);.*");
+        if (ip.empty() || ip == "NA")
+            return "";
+
+        if (ip.front() == '[' && ip.back() == ']')
+            return "";
+
+        return ip;
+    }
+
+    std::string ParseMacFromOpStationByRegex(const std::string &opStation)
+    {
+        auto mac = pobo::SubStringByRegex(opStation, ".*MAC=(.*?);.*");
+        if (mac.empty() || mac == "NA")
+            return "";
+
+        if (mac.front() == '[' && mac.back() == ']')
+            return "";
+
+        return mac;
+    }
+}
+
+std::pair<std::string, std::string> RtHst2Auth::ParseLastLoginInfo(const std::string &last_op_station)
+{
+    if (last_op_station.empty())
+    {
+        return {};
+    }
+
+    return std::make_pair(
+        ParseIpFromOpStationByRegex(last_op_station),
+        ParseMacFromOpStationByRegex(last_op_station));
 }
 
 GwModuleTypeEnum RtHst2Auth::GetCachedRsp(const std::string &accountId)
