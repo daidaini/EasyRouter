@@ -2,14 +2,15 @@
 #include "PoboTool.h"
 #include "STD.h"
 #include "RtGlobalResource.h"
+#include "RtTool.h"
 
 using namespace pobo;
 
 RtAuthUser::RtAuthUser(const muduo::net::TcpConnectionPtr &tcpConn)
 {
     m_TcpConn = tcpConn;
-    m_UploadedMsg = new char[MAX_STEP_PACKAGE_BUFFER_SIZE]{};
-    m_CachedMsgBuf = new u_char[MAX_STEP_PACKAGE_BUFFER_SIZE]{};
+    m_UploadedMsg = new char[s_MaxPackgeSize]{};
+    m_CachedMsgBuf = new u_char[s_MaxPackgeSize]{};
 }
 
 RtAuthUser::~RtAuthUser()
@@ -35,7 +36,7 @@ int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg, DstClient *client)
 
     if (type == RawPackageType::Static)
     {
-        auto commMsg = UnLoadPackageStatic(msg);
+        auto commMsg = HDGwRouter::UnLoadPackageStatic(msg);
         if (!commMsg.empty())
         {
             m_ReqStep.SetPackage(commMsg);
@@ -48,7 +49,7 @@ int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg, DstClient *client)
     }
     else
     {
-        auto reqMsg = UnLoadPackageDefault(msg);
+        auto reqMsg = HDGwRouter::UnLoadPackageDefault(msg, m_CommDecryptKey);
         if (!reqMsg.empty())
         {
             m_ReqStep.SetPackage(reqMsg);
@@ -83,25 +84,6 @@ bool RtAuthUser::CheckPkgAccurate(pobo::RawPackageType type) const
     return true;
 }
 
-std::string RtAuthUser::UnLoadPackageStatic(const pobo::CommMessage &msg)
-{
-    u_char tmpBuf[MAX_STEP_PACKAGE_BUFFER_SIZE]{};
-    int tmpSize = DecrpytStaticKey((char *)tmpBuf, msg);
-    if (tmpSize < 0)
-    {
-        return "";
-    }
-
-    u_long msglen = MAX_STEP_PACKAGE_BUFFER_SIZE;
-    auto result = PoboPkgHandle::UncompressFromZip(m_UploadedMsg, msglen, tmpBuf, tmpSize - sizeof(PB_ZipHead));
-    if (!result.first)
-    {
-        return "";
-    }
-    // 2位位移，前两位是校验码
-    return std::string(m_UploadedMsg + 2, msglen - 2);
-}
-
 void RtAuthUser::SwapCommunicationKey()
 {
     char txmy[33]{};
@@ -133,46 +115,6 @@ void RtAuthUser::SwapCommunicationKey()
     AES_set_decrypt_key((u_char *)randkey, 256, &m_CommDecryptKey);
 
     m_CurrAuthStatus = AuthStatus::ConfirmCommKey;
-}
-
-int RtAuthUser::DecrpytStaticKey(char *outBuf, const pobo::CommMessage &msg)
-{
-    const auto &prikeys = GetPriKeys();
-
-    if (prikeys.empty())
-    {
-        return PoboPkgHandle::DecryptPackgeRSA((u_char *)outBuf, (const unsigned char *)msg.Body.data(), msg.Head.PackageSize);
-    }
-
-    for (const u_char *prikey : prikeys)
-    {
-        int ret = PoboPkgHandle::DecryptPackgeRSA((u_char *)outBuf, (const unsigned char *)msg.Body.data(), msg.Head.PackageSize, prikey);
-        if (ret >= 0)
-        {
-            return ret;
-        }
-
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Debug, "DecryptPackgeRSA this key failed[{}], continue..", ret);
-        continue;
-    }
-
-    SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Error, "DecryptPackgeRSA all private keys failed.");
-    return -1;
-}
-
-std::string RtAuthUser::UnLoadPackageDefault(const pobo::CommMessage &msg)
-{
-    PoboPkgHandle::DecryptPackage(m_CachedMsgBuf, (const unsigned char *)msg.Body.data(), msg.Head.PackageSize, m_CommDecryptKey);
-
-    u_long msglen = MAX_STEP_PACKAGE_BUFFER_SIZE;
-    auto result = PoboPkgHandle::UncompressFromZip(m_UploadedMsg, msglen, m_CachedMsgBuf, strlen((const char *)m_CachedMsgBuf + sizeof(PB_ZipHead)));
-    if (!result.first)
-    {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "UnLoadPackageDefault failed[{}]", result.second);
-        return {};
-    }
-
-    return std::string(m_UploadedMsg + 2, msglen - 2);
 }
 
 void RtAuthUser::SwapPasswordKey()
@@ -221,7 +163,7 @@ void RtAuthUser::SendMsgBack(const std::string &rsp)
     int srclen = rsp.size();
 
     // 压缩
-    char zipedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
+    char zipedmsg[s_MaxPackgeSize];
     int zipedlen = 0;
     if (!PoboPkgHandle::CompressToZip(zipedmsg, zipedlen, src, srclen))
     {
@@ -229,7 +171,7 @@ void RtAuthUser::SendMsgBack(const std::string &rsp)
     }
 
     // 加密
-    u_char pkgedmsg[MAX_STEP_PACKAGE_BUFFER_SIZE];
+    u_char pkgedmsg[s_MaxPackgeSize];
     int len = PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, zipedlen, m_CommEncryptKey);
 
     if (m_TcpConn->connected())
@@ -286,17 +228,22 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
             {
                 g_Global.Hst2Auther()->AskForModuleType(
                     params,
-                    [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType, std::string errmsg)
+                    [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType, std::string returnMsg)
                     {
                         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
                         if (moduleType == GwModuleTypeEnum::NONE)
                         {
-                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, std::move(errmsg)});
+                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, std::move(returnMsg)});
                         }
+                        // 成功，开始创建练级
                         if (!client->Create(std::make_pair(moduleType, loginType)))
                         {
                             return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
                         }
+
+                        // 确认模块成功，msg返回的是"lastip lastmac"
+                        client->SetLastIpMac(std::move(returnMsg));
+
                         client->Connect();
                         client->ConfirmAuthed();
                     });

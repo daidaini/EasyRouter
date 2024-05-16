@@ -39,12 +39,6 @@ public:
 private:
     bool CheckPkgAccurate(pobo::RawPackageType type) const;
 
-    std::string UnLoadPackageStatic(const pobo::CommMessage &msg);
-
-    int DecrpytStaticKey(char *outBuf, const pobo::CommMessage &msg);
-
-    std::string UnLoadPackageDefault(const pobo::CommMessage &msg);
-
     void SwapCommunicationKey();
 
     void SwapPasswordKey();

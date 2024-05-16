@@ -14,6 +14,8 @@
 
 using TcpConnIDType = int;
 
+constexpr int s_MaxPackgeSize = 4096;
+
 enum class RouterAuthType
 {
     // 三方认证
