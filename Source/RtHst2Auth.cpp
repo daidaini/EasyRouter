@@ -78,7 +78,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
 
         // to do testing code
         // 失败就路由到恒生?
-        // return cb(GwModuleTypeEnum::HST2, "");
+        // return cb(GwModuleTypeEnum::HST2, "192.168.11.123 PPGGIIUU");
         return cb(GwModuleTypeEnum::NONE, std::move(errmsg));
     }
 
@@ -93,18 +93,12 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
     std::string last_op_station = hsConn->MID_GetString("last_op_station");
     auto lastIpMac = ParseLastLoginInfo(last_op_station);
 
-    // 柜台没有迁移标识，认为还没切，则返回恒生标识
-    if (statusStr.empty())
-    {
-        return cb(GwModuleTypeEnum::HST2, "");
-    }
-
     GwModuleTypeEnum moduleType = ParseModuleTypeByData(statusStr, params.LoginType);
 
     // 返回标识
     if (moduleType != GwModuleTypeEnum::NONE)
     {
-        cb(moduleType, "");
+        cb(moduleType, std::move(lastIpMac));
         AddCachedRsp(params.AccountId, moduleType);
     }
     else
@@ -131,6 +125,12 @@ GwModuleTypeEnum RtHst2Auth::ParseModuleTypeByData(const std::string &statusStr,
         }
         return LoginTypeEnum::None;
     };
+
+    // 柜台没有迁移标识，认为还没切，则返回恒生标识
+    if (statusStr.empty())
+    {
+        return GwModuleTypeEnum::HST2;
+    }
 
     GwModuleTypeEnum dstType = GwModuleTypeEnum::NONE;
 
@@ -183,16 +183,17 @@ namespace
     }
 }
 
-std::pair<std::string, std::string> RtHst2Auth::ParseLastLoginInfo(const std::string &last_op_station)
+std::string RtHst2Auth::ParseLastLoginInfo(const std::string &last_op_station)
 {
     if (last_op_station.empty())
     {
         return {};
     }
 
-    return std::make_pair(
-        ParseIpFromOpStationByRegex(last_op_station),
-        ParseMacFromOpStationByRegex(last_op_station));
+    // 空格 分隔 两个数据
+    return fmt::format("{} {}",
+                       ParseIpFromOpStationByRegex(last_op_station),
+                       ParseMacFromOpStationByRegex(last_op_station));
 }
 
 GwModuleTypeEnum RtHst2Auth::GetCachedRsp(const std::string &accountId)

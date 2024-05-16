@@ -1,6 +1,9 @@
 #include "RtDstClient.h"
 #include "RtGlobalResource.h"
 
+#include "RtTool.h"
+#include "StringFunc.h"
+
 using namespace muduo::net;
 
 DstClient::DstClient(int srcConnId)
@@ -83,9 +86,20 @@ void DstClient::OnResponse(const TcpConnectionPtr &conn, Buffer *buf, muduo::Tim
     auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
     if (connPtr != nullptr)
     {
-        connPtr->send(buf);
+        if (m_IsLoginRsped)
+        {
+            connPtr->send(buf);
+            buf->retrieveAll();
+        }
+        else
+        {
+            UpdateLoginRspAndSendBack(buf, connPtr);
+        }
     }
-    buf->retrieveAll();
+    else
+    {
+        buf->retrieveAll();
+    }
 }
 
 void DstClient::SendMsg(const std::string &msg)
@@ -164,4 +178,76 @@ void DstClient::ConfirmAuthed()
 bool DstClient::IsValid() const
 {
     return m_IsAuthed && m_IsConnected;
+}
+
+void DstClient::SetLastInfo(std::string lastInfo)
+{
+    auto data = str::Split(lastInfo, ' ');
+    if (data.size() < 2)
+    {
+        return;
+    }
+    m_LastIp = data.at(0);
+    m_LastMac = data.at(1);
+}
+
+void DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpConnectionPtr &srcConn)
+{
+    if (buff == nullptr)
+    {
+        return;
+    }
+
+    // 1. 根据commkey生产aes key
+    AES_KEY encryptKey{};
+    AES_KEY decryptKey{};
+    AES_set_encrypt_key((u_char *)m_Commkey.data(), 256, &encryptKey);
+    AES_set_decrypt_key((u_char *)m_Commkey.data(), 256, &decryptKey);
+
+    // 2. 解密
+    std::vector<pobo::CommMessage> cachedMsgs{};
+    int leftLen = pobo::PoboPkgHandle::SplitPackage(buff->peek(), buff->readableBytes(), cachedMsgs);
+    do
+    {
+        if (cachedMsgs.empty())
+        {
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "网关返回的应答包解析为空");
+            break;
+        }
+
+        auto rspMsg = HDGwRouter::UnLoadPackageDefault(cachedMsgs.front(), decryptKey);
+        if (rspMsg.empty())
+        {
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "卸载网关返回的应答包失败");
+            break;
+        }
+
+        m_IsLoginRsped = true;
+
+        // 3. 更新包数据
+        GatePBStep stepLoginRsp;
+        stepLoginRsp.SetPackage(rspMsg);
+        assert(stepLoginRsp.SetFieldValue(STEP_LAST_LOGIN_IP, m_LastIp.data()));
+        assert(stepLoginRsp.SetFieldValue(STEP_LAST_LOGIN_MAC, m_LastMac.data()));
+
+        std::string loginRsp = stepLoginRsp.ToString();
+        // 4. 重新加载
+        const char *src = loginRsp.data();
+        int srclen = loginRsp.size();
+
+        char zipedmsg[s_MaxPackgeSize];
+        int zipedlen = 0;
+        if (!pobo::PoboPkgHandle::CompressToZip(zipedmsg, zipedlen, src, srclen))
+        {
+            break;
+        }
+
+        // 加密
+        u_char pkgedmsg[s_MaxPackgeSize];
+        int len = pobo::PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, zipedlen, encryptKey);
+
+        srcConn->send(pkgedmsg, len);
+    } while (false);
+
+    buff->retrieve(buff->readableBytes() - leftLen);
 }

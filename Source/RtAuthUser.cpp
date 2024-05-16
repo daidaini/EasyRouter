@@ -241,8 +241,11 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
                             return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
                         }
 
-                        // 确认模块成功，msg返回的是"lastip lastmac"
-                        client->SetLastIpMac(std::move(returnMsg));
+                        if (moduleType == GwModuleTypeEnum::HST2)
+                        {
+                            // 确认模块成功，msg返回的是"lastip lastmac lastlogindate lastlogintime"
+                            client->SetLastInfo(std::move(returnMsg));
+                        }
 
                         client->Connect();
                         client->ConfirmAuthed();

@@ -34,6 +34,8 @@ public:
     void SendMsg(muduo::net::Buffer *buff);
 
     void Close();
+    void SetLastInfo(std::string lastInfo);
+    void UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpConnectionPtr &srcConn);
 
 private:
     void PushKeys();
@@ -55,4 +57,9 @@ private:
     std::string m_SrcPeerIp;
 
     bool m_IsAuthed{false};
+
+    std::string m_LastIp;
+    std::string m_LastMac;
+
+    bool m_IsLoginRsped{false};
 };
