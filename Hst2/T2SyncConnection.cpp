@@ -91,14 +91,14 @@ namespace HST2
         int result = m_HsConnectionPtr->Create(NULL);
         if (result != 0)
         {
-            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "初始t2连接对象(Create)失败:[{}]", GetErrmsg(result));
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "初始HST2连接对象(Create)失败:[{}]", GetErrmsg(result));
             return false;
         }
 
         result = m_HsConnectionPtr->Connect(s_ConnectTimeout);
         if (result != 0)
         {
-            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "t2尝试连接(Connect)失败:[{}]", GetErrmsg(result));
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "HST2尝试连接(Connect)失败:[{}]", GetErrmsg(result));
             return false;
         }
 

@@ -230,7 +230,7 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
                     params,
                     [this, client, loginType = params.LoginType](GwModuleTypeEnum moduleType, std::string returnMsg)
                     {
-                        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from hst2..", GwModuleTypeToStr(moduleType));
+                        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Confirm module type[{}] from HST2..", GwModuleTypeToStr(moduleType));
                         if (moduleType == GwModuleTypeEnum::NONE)
                         {
                             return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, std::move(returnMsg)});
@@ -255,7 +255,7 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
     else
     {
         // 回切，则需要恒生认证，直接连接恒生网关
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Back cutted, route to hst2..");
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Back cutted, route to HST2..");
 
         if (!client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType)))
         {

@@ -24,7 +24,7 @@ void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, RtDstCallbackF
         Connection *hsConn = HST2::g_HsConnPool.GetConnectWithCheckConnectFlag();
         if (hsConn == nullptr)
         {
-            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Get hst2 connection failed..");
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Get HST2 connection failed..");
             return cb(GwModuleTypeEnum::NONE, "[汇点]连接恒生认证系统失败");
         }
 
@@ -69,7 +69,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
     if (::Failed(result.ErrCode))
     {
         std::string errmsg = fmt::format("[{}]{}", result.ErrCode, result.ErrMsg);
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Do hst2 request failed.. {}\n", errmsg);
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Do HST2 request failed.. {}\n", errmsg);
         if (result.ErrCode == GateError::NET_ERROR)
         {
             HST2::g_HsConnPool.ReleaseConnect(hsConn);
@@ -84,7 +84,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
 
     if (!hsConn->MID_MoveNextRec())
     {
-        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Get hst2 empty record");
+        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Get HST2 empty record");
         return cb(GwModuleTypeEnum::NONE, "[汇点]获取认证返回为空");
     }
 
