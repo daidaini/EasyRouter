@@ -9,6 +9,15 @@ using namespace muduo::net;
 DstClient::DstClient(int srcConnId)
 {
     m_SrcConnId = srcConnId;
+
+    if (g_Global.Configer().m_RouterAuthType == RouterAuthType::ThirdSysAuth)
+    {
+        m_IsNeedUpdateLoginRsp = true; // 第三方认证时，走认证获取一些上次登录信息，然后缓存并更新
+    }
+    else
+    {
+        m_IsNeedUpdateLoginRsp = false;
+    }
 }
 
 bool DstClient::Create(ModuleGroupType type)
@@ -86,14 +95,17 @@ void DstClient::OnResponse(const TcpConnectionPtr &conn, Buffer *buf, muduo::Tim
     auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
     if (connPtr != nullptr)
     {
-        if (m_IsLoginRsped)
+        if (m_IsNeedUpdateLoginRsp && (!m_LastIp.empty() || !m_LastMac.empty()))
         {
-            connPtr->send(buf);
-            buf->retrieveAll();
+            if (UpdateLoginRspAndSendBack(buf, connPtr))
+            {
+                m_IsNeedUpdateLoginRsp = false; // 表示已经更新
+            }
         }
         else
         {
-            UpdateLoginRspAndSendBack(buf, connPtr);
+            connPtr->send(buf);
+            buf->retrieveAll();
         }
     }
     else
@@ -191,11 +203,11 @@ void DstClient::SetLastInfo(std::string lastInfo)
     m_LastMac = data.at(1);
 }
 
-void DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpConnectionPtr &srcConn)
+bool DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpConnectionPtr &srcConn)
 {
     if (buff == nullptr)
     {
-        return;
+        return false;
     }
 
     // 1. 根据commkey生产aes key
@@ -222,8 +234,6 @@ void DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpCon
             break;
         }
 
-        m_IsLoginRsped = true;
-
         // 3. 更新包数据
         GatePBStep stepLoginRsp;
         stepLoginRsp.SetPackage(rspMsg);
@@ -247,7 +257,9 @@ void DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpCon
         int len = pobo::PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, zipedlen, encryptKey);
 
         srcConn->send(pkgedmsg, len);
+        return true;
     } while (false);
 
     buff->retrieve(buff->readableBytes() - leftLen);
+    return false;
 }
