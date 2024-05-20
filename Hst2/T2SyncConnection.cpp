@@ -318,7 +318,11 @@ namespace HST2
         {
             const char *err = m_IF2UnPacker->GetStr("error_info");
             if (err != nullptr)
-                return err;
+            {
+                char errmsg[512]{};
+                pobo::GB2312ToUTF8((char *)err, ::strlen(err), errmsg, sizeof(errmsg));
+                return errmsg;
+            }
         }
 
         return "";
