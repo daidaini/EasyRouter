@@ -237,8 +237,13 @@ bool DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpCon
         // 3. 更新包数据
         GatePBStep stepLoginRsp;
         stepLoginRsp.SetPackage(rspMsg);
-        assert(stepLoginRsp.SetFieldValue(STEP_LAST_LOGIN_IP, m_LastIp.data()));
-        assert(stepLoginRsp.SetFieldValue(STEP_LAST_LOGIN_MAC, m_LastMac.data()));
+        if (stepLoginRsp.FunctionId() == 6011)
+        {
+            assert(stepLoginRsp.SetFieldValue(STEP_LAST_LOGIN_IP, m_LastIp.data()));
+            assert(stepLoginRsp.SetFieldValue(STEP_LAST_LOGIN_MAC, m_LastMac.data()));
+            m_LastIp.clear();
+            m_LastMac.clear();
+        }
 
         std::string loginRsp = stepLoginRsp.ToString();
         // 4. 重新加载
