@@ -80,10 +80,13 @@ void DstClient::OnConnect(const TcpConnectionPtr &tcpConn)
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Remove connection : {}", m_Name);
         m_IsConnected.store(false);
 
+        g_Global.GwClientManager().EraseClient(m_SrcConnId);
+
         auto connPtr = g_Global.UserSessions().GetTcpConn(m_SrcConnId);
         if (connPtr != nullptr)
         {
             SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Active disconnect user connection[{}]", m_SrcConnId);
+
             // connPtr->forceCloseWithDelay(0.2);
             connPtr->shutdown();
         }
@@ -219,6 +222,7 @@ bool DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpCon
     // 2. 解密
     std::vector<pobo::CommMessage> cachedMsgs{};
     int leftLen = pobo::PoboPkgHandle::SplitPackage(buff->peek(), buff->readableBytes(), cachedMsgs);
+    bool isSuccess = false;
     do
     {
         if (cachedMsgs.empty())
@@ -262,9 +266,10 @@ bool DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpCon
         int len = pobo::PoboPkgHandle::EncryptPackage(pkgedmsg, (u_char *)zipedmsg, zipedlen, encryptKey);
 
         srcConn->send(pkgedmsg, len);
-        return true;
+        isSuccess = true;
+        break;
     } while (false);
 
     buff->retrieve(buff->readableBytes() - leftLen);
-    return false;
+    return isSuccess;
 }
