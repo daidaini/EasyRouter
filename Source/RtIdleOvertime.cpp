@@ -51,7 +51,7 @@ namespace HDGwRouter
         {
             auto tcpConn = g_Global.UserSessions().GetTcpConn(connId);
             SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "用户[{}]闲置时间超时，断开连接", tcpConn->name());
-            tcpConn->forceClose();
+            tcpConn->shutdown();
         }
     }
 }
