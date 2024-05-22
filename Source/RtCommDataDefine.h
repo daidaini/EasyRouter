@@ -16,6 +16,8 @@ using TcpConnIDType = int;
 
 constexpr int s_MaxPackgeSize = 4096;
 
+static constexpr char g_PASSWORD_ERRORMSG_TIPS[] = "登录失败，请检查账号和密码输入是否正确";
+
 enum class RouterAuthType
 {
     // 三方认证

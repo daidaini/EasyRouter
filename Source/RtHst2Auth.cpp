@@ -74,12 +74,13 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
         {
             HST2::g_HsConnPool.ReleaseConnect(hsConn);
             hsConn = nullptr;
+            return cb(GwModuleTypeEnum::NONE, std::move(errmsg));
         }
 
         // to do testing code
         // 失败就路由到恒生?
         // return cb(GwModuleTypeEnum::HST2, "192.168.11.123 PPGGIIUU");
-        return cb(GwModuleTypeEnum::NONE, std::move(errmsg));
+        return cb(GwModuleTypeEnum::NONE, g_PASSWORD_ERRORMSG_TIPS);
     }
 
     if (!hsConn->MID_MoveNextRec())
