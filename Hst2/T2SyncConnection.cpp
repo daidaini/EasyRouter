@@ -204,7 +204,10 @@ namespace HST2
         auto result = ParseRspPkg(ret);
         if (::Failed(result.ErrCode))
         {
-            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[HST2][Response] Error:({})", result.ErrMsg);
+            char errmsg[512]{};
+            pobo::GB2312ToUTF8((char *)result.ErrMsg.data(), result.ErrMsg.size(), errmsg, sizeof(errmsg));
+            SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "[HST2][Response] Error:({})", errmsg);
+            return {GateError::BIZ_ERROR, errmsg};
         }
         else
         {
@@ -228,12 +231,7 @@ namespace HST2
         case 0:
             return {GateError::SUCCESS, ""};
         case 1:
-        {
-            std::string tmp = GetPackerErrorInfo();
-            char errmsg[256]{};
-            pobo::GB2312ToUTF8((char *)tmp.data(), tmp.size(), errmsg, sizeof(errmsg));
-            return {GateError::BIZ_ERROR, errmsg};
-        }
+            return {GateError::BIZ_ERROR, GetPackerErrorInfo()};
         case 2:
             return {GateError::BIZ_ERROR, (const char *)m_IF2UnPacker};
         case 3:
@@ -319,9 +317,7 @@ namespace HST2
             const char *err = m_IF2UnPacker->GetStr("error_info");
             if (err != nullptr)
             {
-                char errmsg[512]{};
-                pobo::GB2312ToUTF8((char *)err, ::strlen(err), errmsg, sizeof(errmsg));
-                return errmsg;
+                return err;
             }
         }
 
