@@ -33,5 +33,6 @@
             "op_entrust_way": "7"
         },
         "thread_cnt": 3
-    }
+    },
+    "logger_lvl": "info"
 }
