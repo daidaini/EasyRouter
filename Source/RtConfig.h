@@ -29,4 +29,6 @@ public:
     std::map<ModuleGroupType, std::vector<muduo::net::InetAddress>> m_DstAddrGroups;
 
     std::atomic_bool m_IsNeedBackcut{false};
+
+    std::string m_LoggerLvl;
 };

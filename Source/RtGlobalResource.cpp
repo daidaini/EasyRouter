@@ -17,6 +17,8 @@ void GlobalResource::Init()
 
     m_Config.LoadConfig();
 
+    SpdLogger::Instance().SetLoggerLvl(SpdLogger::TransLogLevel(Configer().m_LoggerLvl.c_str()));
+
     InitEventLoop();
 
     if (m_Config.m_RouterAuthType == RouterAuthType::ThirdSysAuth)
@@ -49,7 +51,7 @@ void GlobalResource::InitEventLoop()
                     [](EventLoop *loop)
                     {
                         fmt::print(fg(fmt::color::sea_green), "LoopThread[{}] init sucucess..\n", ::syscall(SYS_gettid));
-                        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "LoopThread[{}] init sucucess..", ::syscall(SYS_gettid));
+                        SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "LoopThread[{}] init sucucess..", ::syscall(SYS_gettid));
                     },
                     "LoopThread"));
 

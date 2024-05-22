@@ -12,6 +12,11 @@
 - "_router_auth.type_" 是配置当前使用哪种路由规则，类型1标识跟恒生系统确认路由目标，类型2是通过本地脚本"**check_local_rule.py**"的"**check_account**"方法确定路由目标
 - "_router_auth.third_system_items_" 配置三方模块认证需要的额外的字段名及字段值， 当前用于恒生认证配置需要的固定字段数据信息。
 - "_router_auth.thread_cnt_" 配置用于"_router.auth_"的线程池大小
+- "_logger_lvl_" 配置日志级别，从高到低有以下几种:
+    - "error"
+    - "warn"
+    - "info"
+    - "debug"
 
 ### dst_addrs.group 定义
 - HST2 (恒生T2网关)

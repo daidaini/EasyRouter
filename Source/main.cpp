@@ -79,6 +79,8 @@ void MainOnTimer()
     {
         // 日志重置
         SpdLogger::Instance().Init(std::vector<LogType>{LogType::System});
+
+        SpdLogger::Instance().SetLoggerLvl(SpdLogger::TransLogLevel(g_Global.Configer().m_LoggerLvl.c_str()));
     }
 
     g_Global.Configer().CheckBackCutFileOnTimer();

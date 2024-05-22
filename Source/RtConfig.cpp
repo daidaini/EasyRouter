@@ -67,6 +67,8 @@ void RtConfig::LoadConfig()
                 m_RouterAuthParams.emplace(item, jSubVal[item].asString());
             }
         }
+
+        m_LoggerLvl = jval["logger_lvl"].asString();
     }
     catch (const std::runtime_error &err)
     {
