@@ -39,6 +39,7 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
         g_Global.GwClientManager().AddClient(connId, std::move(client));
 
         g_Global.UserSessions().AddSession(conn);
+        g_Global.IdleOvertimer().Add(connId);
 
         AddAuthUser(conn);
     }
@@ -46,6 +47,7 @@ void RouterServer::OnConnection(const muduo::net::TcpConnectionPtr &conn)
     {
         // 先删除缓存
         g_Global.UserSessions().EraseSession(connId);
+        g_Global.IdleOvertimer().Erase(connId);
         // 通知 client断开
         DstClient *client = g_Global.GwClientManager().GetClient(connId);
         if (client != nullptr)
