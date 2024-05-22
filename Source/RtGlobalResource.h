@@ -9,6 +9,7 @@
 #include "muduo/base/ThreadPool.h"
 #include "RtHst2Auth.h"
 #include "RtCheckLocalRule.h"
+#include "RtIdleOvertime.h"
 
 class GlobalResource
 {
@@ -26,6 +27,8 @@ public:
     std::unique_ptr<RtHst2Auth> &Hst2Auther();
 
     std::unique_ptr<RtCheckLocalRule> &LocalRuler();
+
+    HDGwRouter::IdleConnOverTime &IdleOvertimer();
 
 public:
     GlobalResource();
@@ -51,6 +54,8 @@ private:
 
     std::unique_ptr<RtHst2Auth> m_Hst2Auth;
     std::unique_ptr<RtCheckLocalRule> m_LocalRuler;
+
+    HDGwRouter::IdleConnOverTime m_IdleOverTimer;
 };
 
 extern GlobalResource g_Global;

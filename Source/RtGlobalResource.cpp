@@ -101,3 +101,8 @@ muduo::net::EventLoop *GlobalResource::EvnetLoop(ModuleGroupType type, size_t in
 
     return nullptr;
 }
+
+HDGwRouter::IdleConnOverTime &GlobalResource::IdleOvertimer()
+{
+    return m_IdleOverTimer;
+}

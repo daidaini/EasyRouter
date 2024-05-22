@@ -188,6 +188,8 @@ void DstClient::PushKeys()
 void DstClient::ConfirmAuthed()
 {
     m_IsAuthed = true;
+
+    g_Global.IdleOvertimer().Erase(m_SrcConnId);
 }
 
 bool DstClient::IsValid() const

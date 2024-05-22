@@ -23,6 +23,8 @@ public:
         lock.unlock();
         fmt::print(fg(fmt::color::sea_green), "{}\n", logstr);
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, logstr);
+
+        g_Global.IdleOvertimer().Add(connId);
     }
 
     void EraseSession(TcpConnIDType connId)
@@ -43,6 +45,8 @@ public:
         std::string logstr = fmt::format("用户[{}]断开连接成功, 当前总用户数 = {}", connId, userCnt);
         fmt::print(fg(fmt::color::orange_red), "{}\n", logstr);
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, std::move(logstr));
+
+        g_Global.IdleOvertimer().Erase(connId);
     }
 
     muduo::net::TcpConnectionPtr GetTcpConn(TcpConnIDType connId)

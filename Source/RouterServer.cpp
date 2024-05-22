@@ -63,6 +63,8 @@ void RouterServer::OnMessage(const muduo::net::TcpConnectionPtr &conn, muduo::ne
         return;
     }
 
+    g_Global.IdleOvertimer().UpdateTime(conn->getConnId());
+
     if (!client->IsValid())
     {
         return ProcessAuthMessage(conn, buf, client);

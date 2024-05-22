@@ -82,6 +82,8 @@ void MainOnTimer()
     }
 
     g_Global.Configer().CheckBackCutFileOnTimer();
+
+    g_Global.IdleOvertimer().CheckOverTimer();
 }
 
 int main(int argc, char *argv[])
@@ -101,7 +103,7 @@ int main(int argc, char *argv[])
     RouterServer rtServer(&serverLoop, listenAddr);
     rtServer.Start();
 
-    serverLoop.runEvery(10.0, MainOnTimer); // 定时10秒
+    serverLoop.runEvery(30.0, MainOnTimer); // 定时30秒
 
     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Server started, begin to loop..");
 
