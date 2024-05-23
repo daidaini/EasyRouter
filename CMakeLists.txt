@@ -72,6 +72,10 @@ SET(THIRD_LIBRARY_PATH ${THIRD_LIBRARY_PATH} ../pb-trade-server/ServiceHST2/T2SD
 add_definitions(-DFMT_HEADER_ONLY)
 add_definitions(-DSPDLOG_FMT_EXTERNAL)
 
+if(${CMAKE_BUILD_TYPE} STREQUAL "release")
+	add_definitions(-DNDEBUG)
+endif()
+
 add_executable(${PRJ} ${all_file})
 
 target_link_libraries(${PRJ} PRIVATE ${BOOST_FILESYS_LIB} ${OPENSSL_LIBRARIES} ${Z_LIB} ${Python_LIBRARIES} libt2sdk.so)

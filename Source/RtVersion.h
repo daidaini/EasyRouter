@@ -8,7 +8,7 @@ namespace HDGwRouter
     constexpr const int subVer = 0;
     constexpr const int pubVer = 0;
     constexpr const int buildVer = 0;
-    constexpr const int updateDate = 20240507;
+    constexpr const int updateDate = 20240523;
 #ifdef NDEBUG
     static const std::string dsp = "汇点网关路由服务";
 #else
