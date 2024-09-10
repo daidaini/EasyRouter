@@ -25,7 +25,7 @@ void RtHst2Auth::AskForModuleType(const AuthRequestParam &params, RtDstCallbackF
         if (hsConn == nullptr)
         {
             SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "Get HST2 connection failed..");
-            return cb(GwModuleTypeEnum::NONE, "[汇点]连接恒生认证系统失败");
+            return cb(GwModuleTypeEnum::NONE, "连接恒生认证系统失败");
         }
 
         DoAuthentication(params, hsConn, std::move(cb));
@@ -83,7 +83,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
     if (!hsConn->MID_MoveNextRec())
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Info, "Get HST2 empty record");
-        return cb(GwModuleTypeEnum::NONE, "[汇点]获取认证返回为空");
+        return cb(GwModuleTypeEnum::NONE, "获取认证返回为空");
     }
 
     std::string statusStr = hsConn->MID_GetString("asset_prop_status_str");
@@ -101,7 +101,7 @@ void RtHst2Auth::DoAuthentication(const AuthRequestParam &params, Connection *&h
     }
     else
     {
-        cb(moduleType, "[汇点]未配置正确的模块");
+        cb(moduleType, "未配置正确的模块");
     }
 }
 

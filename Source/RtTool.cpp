@@ -1,7 +1,7 @@
 #include "RtTool.h"
 
 using namespace pobo;
-namespace HDGwRouter
+namespace EasyRouter
 {
     std::string UnLoadPackageDefault(const pobo::CommMessage &msg, AES_KEY &decryptKey)
     {

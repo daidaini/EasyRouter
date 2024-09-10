@@ -1,7 +1,7 @@
 #include "RtIdleOvertime.h"
 #include "RtGlobalResource.h"
 
-namespace HDGwRouter
+namespace EasyRouter
 {
     namespace
     {

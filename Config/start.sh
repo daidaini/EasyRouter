@@ -1,7 +1,7 @@
 #! /usr/bin/bash
 
 CURRENT_PATH=`pwd -P`
-EXE_NAME=HDGwRouter
+EXE_NAME=EasyRouter
 CURR_EXE=$CURRENT_PATH/$EXE_NAME
 
 #PYTHONPATH 环境变量

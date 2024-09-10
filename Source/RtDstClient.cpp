@@ -180,6 +180,7 @@ void DstClient::SetLoginRequest(std::string loginReq)
 
 void DstClient::PushKeys()
 {
+    // to do. 格式可扩展
     std::string pushmsg = fmt::format("Router,{},{},{},", m_Commkey, m_Pwdkey, m_SrcPeerIp);
     SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Debug, "[Pushmsg]{}", pushmsg);
     SendMsg(pushmsg);
@@ -233,7 +234,7 @@ bool DstClient::UpdateLoginRspAndSendBack(Buffer *buff, const muduo::net::TcpCon
             break;
         }
 
-        auto rspMsg = HDGwRouter::UnLoadPackageDefault(cachedMsgs.front(), decryptKey);
+        auto rspMsg = EasyRouter::UnLoadPackageDefault(cachedMsgs.front(), decryptKey);
         if (rspMsg.empty())
         {
             SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "卸载网关返回的应答包失败");

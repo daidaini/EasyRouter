@@ -36,7 +36,7 @@ int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg, DstClient *client)
 
     if (type == RawPackageType::Static)
     {
-        auto commMsg = HDGwRouter::UnLoadPackageStatic(msg);
+        auto commMsg = EasyRouter::UnLoadPackageStatic(msg);
         if (!commMsg.empty())
         {
             m_ReqStep.SetPackage(commMsg);
@@ -49,7 +49,7 @@ int RtAuthUser::ProcessMsg(const pobo::CommMessage &msg, DstClient *client)
     }
     else
     {
-        auto reqMsg = HDGwRouter::UnLoadPackageDefault(msg, m_CommDecryptKey);
+        auto reqMsg = EasyRouter::UnLoadPackageDefault(msg, m_CommDecryptKey);
         if (!reqMsg.empty())
         {
             m_ReqStep.SetPackage(reqMsg);
@@ -235,10 +235,10 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
                         {
                             return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, std::move(returnMsg)});
                         }
-                        // 成功，开始创建练级
+                        // 成功，开始创建连接
                         if (!client->Create(std::make_pair(moduleType, loginType)))
                         {
-                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
+                            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
                         }
 
                         if (moduleType == GwModuleTypeEnum::HST2)
@@ -259,7 +259,7 @@ void RtAuthUser::AskingRouterFlagTh(const AuthRequestParam &params, DstClient *c
 
         if (!client->Create(std::make_pair(GwModuleTypeEnum::HST2, params.LoginType)))
         {
-            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
+            return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
         }
         client->Connect();
         client->ConfirmAuthed();
@@ -282,7 +282,7 @@ void RtAuthUser::CheckLocalRuleTh(const AuthRequestParam &params, DstClient *cli
                     }
                     if (!client->Create(std::make_pair(moduleType, loginType)))
                     {
-                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "[汇点]无法成功创建到网关的连接"});
+                        return this->DoErrorRsp(GateErrorStruct{GateError::BIZ_ERROR, "无法成功创建到网关的连接"});
                     }
                     client->Connect();
                     client->ConfirmAuthed();

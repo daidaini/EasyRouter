@@ -2,7 +2,7 @@
 
 #include "RtCommDataDefine.h"
 
-namespace HDGwRouter
+namespace EasyRouter
 {
     class IdleConnOverTime final
     {

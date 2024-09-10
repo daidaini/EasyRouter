@@ -4,7 +4,7 @@
 
 #include "RtCommDataDefine.h"
 
-namespace HDGwRouter
+namespace EasyRouter
 {
     int DecrpytStaticKey(char *outBuf, const pobo::CommMessage &msg);
 

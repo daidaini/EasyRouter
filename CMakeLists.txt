@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include(../Common.cmake)
-set(PRJ "HDGwRouter")
+include(./Common.cmake)
+set(PRJ "EasyRouter")
 
 project(${PRJ})
 
@@ -16,7 +16,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -ldl")
 SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -ggdb -pipe")
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -w")
 
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../run/HDGwRouter)
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../run/EasyRouter)
 
 include_directories(../GeneralThirdPart/)
 add_package(jsoncpp ../GeneralThirdPart/jsoncpp)
@@ -29,10 +29,7 @@ add_package(Logger ../Common/Logger)
 add_package(Define ../Common/CommonDefine)
 add_package(PBStep ../Common/PBStep)
 
-include_directories(../pb-trade-server/PBFrame/DataDefine)
-add_match_package(StaticData ../pb-trade-server/PBFrame/Source/ PbStaticData.*)
-
-include_directories(../pb-trade-server/ServiceHST2/T2SDK/Include)
+add_package(ServerData ./ServerData)
 add_package(HST2Sync ./Hst2/)
 
 find_library(BOOST_FILESYS_LIB libboost_filesystem.a)
@@ -66,7 +63,7 @@ else()
     message(STATUS "CPython not found")
 endif()
 
-SET(THIRD_LIBRARY_PATH ${THIRD_LIBRARY_PATH} ../pb-trade-server/ServiceHST2/T2SDK/linux.x64/lib)
+SET(THIRD_LIBRARY_PATH ${THIRD_LIBRARY_PATH} ./Hst2)
 
 # 添加预定义
 add_definitions(-DFMT_HEADER_ONLY)

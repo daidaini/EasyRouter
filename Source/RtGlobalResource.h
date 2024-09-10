@@ -28,7 +28,7 @@ public:
 
     std::unique_ptr<RtCheckLocalRule> &LocalRuler();
 
-    HDGwRouter::IdleConnOverTime &IdleOvertimer();
+    EasyRouter::IdleConnOverTime &IdleOvertimer();
 
 public:
     GlobalResource();
@@ -55,7 +55,7 @@ private:
     std::unique_ptr<RtHst2Auth> m_Hst2Auth;
     std::unique_ptr<RtCheckLocalRule> m_LocalRuler;
 
-    HDGwRouter::IdleConnOverTime m_IdleOverTimer;
+    EasyRouter::IdleConnOverTime m_IdleOverTimer;
 };
 
 extern GlobalResource g_Global;

@@ -1,4 +1,4 @@
-# HDGwRouter使用说明
+# EasyRouter使用说明
 
 ## 服务配置项说明
 
@@ -7,7 +7,7 @@
 
 - "_server_port_" 是路由服务的监听端口，如果不配置，可以在启动选项中'-p'指定
 - "_server_thread_cnt_" 配置服务端处理请求的工作线程数量，如果不配置，可以在启动选项中'-t'指定
-- "_dst_addrs_" 配置需要路由转发到的交易网关的地址信息
+- "_dst_addrs_" 配置需要路由转发到的网关服务的地址信息
 - "_dst_addrs.group_" 是配置具体对应的我们哪个模块的网关，(选项可为HST2、DDA5等网关模块标识)
 - "_dst_addrs.biz_" 用以配置是什么业务，期权(option)还是股票(stock),或是两融(margin)
 - "_router_auth_" 是用于配置如何获取路由规则的信息
@@ -54,7 +54,7 @@
 ```shell
 #启动
 CURRENT_PATH=`pwd -P`
-EXE_NAME=HDGwRouter
+EXE_NAME=EasyRouter
 CURR_EXE=$CURRENT_PATH/$EXE_NAME
 
 $CURR_EXE >> $CURRENT_PATH/log/cmd_log.txt 2>&1 &
@@ -71,7 +71,7 @@ export PYTHONPATH=$CURRENT_PATH
 
 这样，只要保证check_local_rule.py文件在程序目录下即可找到
 
-## 中信证券的全局回切
+## 全局回切方案
 
 通过 **backcut** 文件来确认当前系统是否需要回切 ：
 

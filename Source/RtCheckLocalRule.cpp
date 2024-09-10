@@ -52,14 +52,14 @@ void RtCheckLocalRule::CheckRtByAccount(const std::string &accountId, RtDstCallb
 
     if (m_PyModule == nullptr || m_CheckAccountFunc == nullptr)
     {
-        return cb(gwType, "[汇点]存在模块加载失败");
+        return cb(gwType, "存在模块加载失败");
     }
 
     PyObject *pArg = PyUnicode_FromString(accountId.c_str());
     if (pArg == nullptr)
     {
         SpdLogger::Instance().WriteLog(LogType::System, LogLevel::Warn, "PyUnicode_FromString failed..");
-        return cb(gwType, "[汇点]加载参数失败");
+        return cb(gwType, "加载参数失败");
     }
 
     PyObject *pArgs = PyTuple_New(1);
@@ -83,7 +83,7 @@ void RtCheckLocalRule::CheckRtByAccount(const std::string &accountId, RtDstCallb
     }
     else
     {
-        cb(gwType, "[汇点]未配置正确的模块");
+        cb(gwType, "未配置正确的模块");
     }
 
     Py_DECREF(pResult);
