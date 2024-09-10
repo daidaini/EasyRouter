@@ -57,6 +57,8 @@ enum class GwModuleTypeEnum
     AMS = 10,
     CTP = 11,
     UT = 12,
+    JZMID = 13,
+    JZKCBP = 14,
 };
 
 using ModuleGroupType = std::pair<GwModuleTypeEnum, LoginTypeEnum>;
@@ -78,6 +80,8 @@ inline GwModuleTypeEnum GwModuleTypeFromStr(std::string name)
         {"AMS", GwModuleTypeEnum::AMS},
         {"CTP", GwModuleTypeEnum::CTP},
         {"UT", GwModuleTypeEnum::UT},
+        {"JZMID", GwModuleTypeEnum::JZMID},
+        {"JZKCBP", GwModuleTypeEnum::JZKCBP},
     };
 
     auto it = s_NameMapperType.find(name);
@@ -104,6 +108,8 @@ inline std::string GwModuleTypeToStr(GwModuleTypeEnum type)
         {GwModuleTypeEnum::AMS, "AMS"},
         {GwModuleTypeEnum::CTP, "CTP"},
         {GwModuleTypeEnum::UT, "UT"},
+        {GwModuleTypeEnum::JZMID, "JZMID"},
+        {GwModuleTypeEnum::JZKCBP, "JZKCBP"},
         {GwModuleTypeEnum::NONE, "NONE"},
     };
 
