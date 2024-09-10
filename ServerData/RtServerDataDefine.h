@@ -31,51 +31,45 @@
 #include <fmt/format.h>
 #include <fmt/color.h>
 
-namespace pobo
+class ConnectionUser;
+
+using TcpConnIDType = int;
+
+using ReqPkgPtr = GatePBStep *;
+using RspPkgPtr = GatePBStep *;
+using PushPkgPtr = GatePBStep *;
+struct MsgPackType
 {
-    extern muduo::ThreadPool g_ThreadPool;
+    ReqPkgPtr Request;
+    RspPkgPtr Response;
+    muduo::Timestamp RequestTime;
 
-    class ConnectionUser;
-
-    using TcpConnIDType = int;
-    using ConnectionUserPtr = std::shared_ptr<ConnectionUser>;
-
-    using ReqPkgPtr = GatePBStep *;
-    using RspPkgPtr = GatePBStep *;
-    using PushPkgPtr = GatePBStep *;
-    struct MsgPackType
+    MsgPackType(ReqPkgPtr req, RspPkgPtr rsp, muduo::Timestamp t)
+        : Request(req), Response(rsp), RequestTime(t)
     {
-        ReqPkgPtr Request;
-        RspPkgPtr Response;
-        muduo::Timestamp RequestTime;
+    }
 
-        MsgPackType(ReqPkgPtr req, RspPkgPtr rsp, muduo::Timestamp t)
-            : Request(req), Response(rsp), RequestTime(t)
+    MsgPackType()
+        : Request(nullptr), Response(nullptr)
+    {
+    }
+
+    void Release()
+    {
+        if (Request != nullptr)
         {
+            delete Request;
+            Request = nullptr;
         }
 
-        MsgPackType()
-            : Request(nullptr), Response(nullptr)
+        if (Response != nullptr)
         {
+            delete Response;
+            Response = nullptr;
         }
+    }
+};
 
-        void Release()
-        {
-            if (Request != nullptr)
-            {
-                delete Request;
-                Request = nullptr;
-            }
+using UserCacheType = std::vector<MsgPackType>;
 
-            if (Response != nullptr)
-            {
-                delete Response;
-                Response = nullptr;
-            }
-        }
-    };
-
-    using UserCacheType = std::vector<MsgPackType>;
-
-    using OnResponseFuncType = std::function<void(MsgPackType)>;
-}
+using OnResponseFuncType = std::function<void(MsgPackType)>;

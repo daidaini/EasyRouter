@@ -18,17 +18,14 @@
 #include <ifaddrs.h>
 #include <netpacket/packet.h>
 
-namespace pobo
-{
-    constexpr double s_CloseDelayTime = 0.5; // 秒
+constexpr double s_CloseDelayTime = 0.5; // 秒
 
-    const std::map<std::string, std::string> &GetEthNameWithMac();
+const std::map<std::string, std::string> &GetEthNameWithMac();
 
-    std::vector<std::string> GetMacAddrs();
+std::vector<std::string> GetMacAddrs();
 
-    const std::map<std::string, std::pair<std::string, std::string>> &GetPhysicalIpAddrs();
+const std::map<std::string, std::pair<std::string, std::string>> &GetPhysicalIpAddrs();
 
-    std::vector<std::string> LocalIp(bool isIpv6);
+std::vector<std::string> LocalIp(bool isIpv6);
 
-    const std::vector<u_char *> &GetPriKeys();
-}
+const std::vector<u_char *> &GetPriKeys();
